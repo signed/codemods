@@ -2,7 +2,8 @@
   "name": "codemods",
   "private": true,
   "scripts": {
-    "start": "ts-node sample/two.ts"
+    "start": "ts-node sample/two.ts",
+    "transform": "yarn jscodemode --dry --extensions=ts --transform transformers/noop.ts sample/"
   },
   "devDependencies": {
     "@types/jscodeshift": "0.6.3",
