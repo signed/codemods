@@ -7,6 +7,6 @@ export const parser: string = 'ts';
 export default (file: FileInfo, api: API) => {
     const j = api.jscodeshift;
     const root = j(file.source);
-    api.report(file.path);
+    root.find(j.ExportDefaultDeclaration).forEach(flup => console.log(flup));
     return root.toSource();
 }

@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "ts-node sample/two.ts",
-    "transform": "yarn jscodemode --dry --extensions=ts --transform transformers/noop.ts sample/"
+    "transform": "jscodeshift --dry --extensions=ts --transform transformers/default-to-named-export.ts sample/"
   },
   "devDependencies": {
     "@types/jscodeshift": "0.6.3",
