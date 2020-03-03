@@ -1,0 +1,9 @@
+{
+  "name": "codemods",
+  "private": true,
+  "devDependencies": {
+    "@types/jscodeshift": "0.6.3",
+    "jscodeshift": "0.7.0",
+    "typescript": "3.8.3"
+  }
+}
