@@ -5,3 +5,7 @@
 - https://www.toptal.com/javascript/write-code-to-rewrite-your-code
   tutorial with exercises
 - https://github.com/5to6/5to6-codemod/blob/master/transforms/named-export-generation.js
+
+
+# Examples on how to use jscodeshift
+- https://stackoverflow.com/a/58429246

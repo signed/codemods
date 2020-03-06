@@ -1,5 +1,5 @@
 // https://augustinlf.com/writing-codemods-to-transform-your-codebase/
-import { API, FileInfo } from 'jscodeshift/src/core';
+import { API, FileInfo, StringLiteral } from 'jscodeshift/src/core';
 
 export const parser: string = 'ts';
 
@@ -7,6 +7,29 @@ export const parser: string = 'ts';
 export default (file: FileInfo, api: API) => {
     const j = api.jscodeshift;
     const root = j(file.source);
-    root.find(j.ExportDefaultDeclaration).forEach(flup => console.log(flup));
+
+    const getFirstNode = () => root.find(j.Program).get('body', 0).node;
+    const originalFirstNode = getFirstNode();
+    const comments = originalFirstNode.comments;
+
+    root.find(j.ExportDefaultDeclaration).forEach(defaultExport => {
+        const declarationType = defaultExport.value.declaration.type;
+        if (declarationType !== 'StringLiteral') {
+            console.log('[skip] ' + declarationType);
+            return;
+        }
+        const exportName = 'One';
+        const replacementDeclaration = j.variableDeclaration('const', [
+            j.variableDeclarator(j.identifier(exportName), defaultExport.value.declaration as StringLiteral)
+        ]);
+
+        j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
+    });
+
+    const firstNodeAfterTransformation = getFirstNode();
+    if (originalFirstNode !== firstNodeAfterTransformation) {
+        firstNodeAfterTransformation.comments = comments;
+    }
+
     return root.toSource();
 }
