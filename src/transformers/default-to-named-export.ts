@@ -18,7 +18,7 @@ export default (file: FileInfo, api: API, _options: Options) => {
             console.log('[skip] ' + declarationType);
             return;
         }
-        const exportName = 'One';
+        const exportName = 'ExportName';
         const replacementDeclaration = j.variableDeclaration('const', [
             j.variableDeclarator(j.identifier(exportName), defaultExport.value.declaration as StringLiteral)
         ]);

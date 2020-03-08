@@ -1,24 +1,26 @@
 import { apiForTypescript } from '../utils';
 import transform from './default-to-named-export';
 
-const input = `// default-export-string-literal.ts
+describe('replace default export with named export', () => {
+  const transformedDefaultExport = (input: string) => {
+    const noOptions = {};
+    const fileInfo = { source: input.trim(), path: 'export-name.ts' };
+    return transform(fileInfo, apiForTypescript(), noOptions);
+  };
+
+  test('preserve comments at the start of the file', () => {
+    const input = `// default-export-string-literal.ts
 export default 'banana';
 
-export const constantString = () => 'cucumber';
-`;
+export const constantString = () => 'cucumber';`;
+    const expected = `// default-export-string-literal.ts
+export const ExportName = 'banana';
 
-const expected = `
-// default-export-string-literal.ts
-export const One = 'banana';
+export const constantString = () => 'cucumber';`;
+    expect(transformedDefaultExport(input)).toEqual(expected);
+  });
 
-export const constantString = () => 'cucumber';
-`;
-
-describe('replace default export with named export', () => {
-  test('String Literal default export ', () => {
-    const transformOptions = {};
-    const fileInfo = { source: input.trim(), path: 'stand-in' };
-    const actual = transform(fileInfo, apiForTypescript(), transformOptions);
-    expect(actual).toEqual(expected.trim());
+  test('string Literal default export ', () => {
+    expect(transformedDefaultExport(`export default 'banana';`)).toEqual(`export const ExportName = 'banana';`.trim());
   });
 });
