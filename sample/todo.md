@@ -1,0 +1,5 @@
+- function
+- arrow function
+- interface
+- (const) enum
+- import under symbol name or renamed
