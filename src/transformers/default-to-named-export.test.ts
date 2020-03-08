@@ -9,13 +9,16 @@ describe('replace default export with named export', () => {
     return transform(fileInfo, apiForTypescript(), noOptions);
   };
 
-  test('preserve comments at the start of the file', () => {
+  test('preserve line comment at the start of the file', () => {
     const input = `// preserve this comment
 export default 'banana';`;
     expect(transformedDefaultExport(input)).toStartWith('// preserve this comment');
   });
 
-  test('string Literal default export ', () => {
+  test('string literal default export ', () => {
     expect(transformedDefaultExport(`export default 'banana';`)).toEqual(`export const ExportName = 'banana';`.trim());
+  });
+  test('numeric literal default export ', () => {
+    expect(transformedDefaultExport(`export default 42;`)).toEqual(`export const ExportName = 42;`.trim());
   });
 });
