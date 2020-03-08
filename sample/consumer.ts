@@ -1,6 +1,6 @@
-import theOne from './one';
-import fruit from './two';
-import sneaky from './three';
+import theOne from './default-export-string-literal';
+import fruit from './default-export-object-literal';
+import sneaky from './default-export-using-as-rename';
 
 console.log(theOne);
 console.log(fruit);
