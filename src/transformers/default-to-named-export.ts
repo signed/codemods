@@ -31,5 +31,5 @@ export default (file: FileInfo, api: API) => {
         firstNodeAfterTransformation.comments = comments;
     }
 
-    return root.toSource();
+    return root.toSource({quote: 'single'});
 }
