@@ -1,4 +1,4 @@
-import { applyTransform } from '../utils';
+import { apiForTypescript } from '../utils';
 import transform from './default-to-named-export';
 
 const input = `// default-export-string-literal.ts
@@ -18,7 +18,7 @@ describe('replace default export with named export', () => {
   test('String Literal default export ', () => {
     const transformOptions = {};
     const fileInfo = { source: input.trim(), path: 'stand-in' };
-    const actual = applyTransform(transform, transformOptions, fileInfo, { parser: 'ts' });
+    const actual = transform(fileInfo, apiForTypescript(), transformOptions);
     expect(actual).toEqual(expected.trim());
   });
 });
