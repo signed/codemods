@@ -14,11 +14,10 @@ describe('replace default export with named export', () => {
 export default 'banana';`;
     expect(transformedDefaultExport(input)).toStartWith('// preserve this comment');
   });
-
   test('string literal default export ', () => {
-    expect(transformedDefaultExport(`export default 'banana';`)).toEqual(`export const ExportName = 'banana';`.trim());
+    expect(transformedDefaultExport(`export default 'banana';`)).toEqual(`export const ExportName = 'banana';`);
   });
   test('numeric literal default export ', () => {
-    expect(transformedDefaultExport(`export default 42;`)).toEqual(`export const ExportName = 42;`.trim());
+    expect(transformedDefaultExport(`export default 42;`)).toEqual(`export const ExportName = 42;`);
   });
 });
