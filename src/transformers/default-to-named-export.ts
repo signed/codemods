@@ -1,10 +1,15 @@
 import * as K from 'ast-types/gen/kinds';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
 
+export const DoNotTransform = undefined;
+
 export const parser: string = 'ts';
 
 // This function is called for each file you targeted with the CLI
 export default (file: FileInfo, api: API, _options: Options) => {
+  if (file.path.endsWith('.d.ts')) {
+    return DoNotTransform;
+  }
   const j = api.jscodeshift;
   const root = j(file.source);
 
@@ -15,20 +20,18 @@ export default (file: FileInfo, api: API, _options: Options) => {
   root.find(j.ExportDefaultDeclaration).forEach(defaultExport => {
     const declarationType = defaultExport.value.declaration.type;
     const declaration = defaultExport.value.declaration;
-    if (!isExpressionKind(declaration) &&  !(declaration.type === 'TSInterfaceDeclaration')) {
-      console.log('[skip] ' + declarationType);
-      return;
-    }
     if (isExpressionKind(declaration)) {
       convertDefaultExportExpressionToNamedExport(j, declaration, defaultExport);
       return;
     }
 
-    if (declaration.type === 'TSInterfaceDeclaration') {
+    if (['ClassDeclaration', 'TSInterfaceDeclaration', 'FunctionDeclaration'].includes(declaration.type)) {
       const namedExportDeclaration = j.exportNamedDeclaration(declaration as K.DeclarationKind);
       j(defaultExport).replaceWith(namedExportDeclaration);
       return;
     }
+
+    console.log('[skip] ' + declarationType);
   });
 
   const firstNodeAfterTransformation = getFirstNode();
