@@ -20,7 +20,7 @@ export default 'banana';`;
   test('numeric literal default export ', () => {
     expect(transformedDefaultExport(`export default 42;`)).toEqual(`export const ExportName = 42;`);
   });
-  test('numeric literal ddddefault export ', () => {
+  test('function expressions default export ', () => {
     const input = `const call = () => 44;
 export default call();`;
     const expected = `const call = () => 44;
