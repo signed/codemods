@@ -1,12 +1,7 @@
 import * as K from 'ast-types/gen/kinds';
-import { API, FileInfo, Options, StringLiteral } from 'jscodeshift/src/core';
+import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
 
 export const parser: string = 'ts';
-
-const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.ExpressionKind => {
-  const expressionTypes = ['Identifier', 'FunctionExpression', 'ThisExpression', 'ArrayExpression', 'ObjectExpression', 'Literal', 'SequenceExpression', 'UnaryExpression', 'BinaryExpression', 'AssignmentExpression', 'UpdateExpression', 'LogicalExpression', 'ConditionalExpression', 'NewExpression', 'CallExpression', 'MemberExpression', 'ArrowFunctionExpression', 'YieldExpression', 'GeneratorExpression', 'ComprehensionExpression', 'ClassExpression', 'TaggedTemplateExpression', 'TemplateLiteral', 'AwaitExpression', 'JSXIdentifier', 'JSXExpressionContainer', 'JSXMemberExpression', 'JSXElement', 'JSXFragment', 'JSXText', 'JSXEmptyExpression', 'JSXSpreadChild', 'TypeCastExpression', 'DoExpression', 'Super', 'BindExpression', 'MetaProperty', 'ParenthesizedExpression', 'DirectiveLiteral', 'StringLiteral', 'NumericLiteral', 'BigIntLiteral', 'NullLiteral', 'BooleanLiteral', 'RegExpLiteral', 'PrivateName', 'Import', 'TSAsExpression', 'TSNonNullExpression', 'TSTypeParameter', 'TSTypeAssertion', 'OptionalMemberExpression', 'OptionalCallExpression'];
-  return expressionTypes.includes(toCheck.type);
-};
 
 // This function is called for each file you targeted with the CLI
 export default (file: FileInfo, api: API, _options: Options) => {
@@ -20,16 +15,20 @@ export default (file: FileInfo, api: API, _options: Options) => {
   root.find(j.ExportDefaultDeclaration).forEach(defaultExport => {
     const declarationType = defaultExport.value.declaration.type;
     const declaration = defaultExport.value.declaration;
-    if (!isExpressionKind(declaration)) {
+    if (!isExpressionKind(declaration) &&  !(declaration.type === 'TSInterfaceDeclaration')) {
       console.log('[skip] ' + declarationType);
       return;
     }
-    const exportName = 'ExportName';
-    const replacementDeclaration = j.variableDeclaration('const', [
-      j.variableDeclarator(j.identifier(exportName), declaration)
-    ]);
+    if (isExpressionKind(declaration)) {
+      convertDefaultExportExpressionToNamedExport(j, declaration, defaultExport);
+      return;
+    }
 
-    j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
+    if (declaration.type === 'TSInterfaceDeclaration') {
+      const namedExportDeclaration = j.exportNamedDeclaration(declaration as K.DeclarationKind);
+      j(defaultExport).replaceWith(namedExportDeclaration);
+      return;
+    }
   });
 
   const firstNodeAfterTransformation = getFirstNode();
@@ -39,3 +38,16 @@ export default (file: FileInfo, api: API, _options: Options) => {
 
   return root.toSource({ quote: 'single' });
 }
+
+const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.ExpressionKind => {
+  const expressionTypes = ['Identifier', 'FunctionExpression', 'ThisExpression', 'ArrayExpression', 'ObjectExpression', 'Literal', 'SequenceExpression', 'UnaryExpression', 'BinaryExpression', 'AssignmentExpression', 'UpdateExpression', 'LogicalExpression', 'ConditionalExpression', 'NewExpression', 'CallExpression', 'MemberExpression', 'ArrowFunctionExpression', 'YieldExpression', 'GeneratorExpression', 'ComprehensionExpression', 'ClassExpression', 'TaggedTemplateExpression', 'TemplateLiteral', 'AwaitExpression', 'JSXIdentifier', 'JSXExpressionContainer', 'JSXMemberExpression', 'JSXElement', 'JSXFragment', 'JSXText', 'JSXEmptyExpression', 'JSXSpreadChild', 'TypeCastExpression', 'DoExpression', 'Super', 'BindExpression', 'MetaProperty', 'ParenthesizedExpression', 'DirectiveLiteral', 'StringLiteral', 'NumericLiteral', 'BigIntLiteral', 'NullLiteral', 'BooleanLiteral', 'RegExpLiteral', 'PrivateName', 'Import', 'TSAsExpression', 'TSNonNullExpression', 'TSTypeParameter', 'TSTypeAssertion', 'OptionalMemberExpression', 'OptionalCallExpression'];
+  return expressionTypes.includes(toCheck.type);
+};
+
+const convertDefaultExportExpressionToNamedExport = (j: JSCodeshift, declaration: K.ExpressionKind, defaultExport: ASTPath<ExportDefaultDeclaration>) => {
+  const exportName = 'ExportName';
+  const replacementDeclaration = j.variableDeclaration('const', [
+    j.variableDeclarator(j.identifier(exportName), declaration)
+  ]);
+  j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
+};
