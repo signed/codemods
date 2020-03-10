@@ -1,9 +1,8 @@
 import * as K from 'ast-types/gen/kinds';
-import * as N from 'ast-types/gen/nodes';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
 
 export const DoNotTransform = undefined;
-type DeclarationWithId = K.FunctionDeclarationKind | K.ClassDeclarationKind | K.TSInterfaceDeclarationKind
+type MaybeAnonymousDefaultExportDeclarations = K.FunctionDeclarationKind | K.ClassDeclarationKind
 
 export const parser: string = 'ts';
 
@@ -28,16 +27,16 @@ export default (file: FileInfo, api: API, _options: Options) => {
     }
 
     if (['FunctionDeclaration', 'ClassDeclaration'].includes(declaration.type)) {
-      const f = declaration as DeclarationWithId;
+      const f = declaration as MaybeAnonymousDefaultExportDeclarations;
       if (f.id === null) {
 
       }
     }
     if (isDeclarationKind(declaration)) {
-      if (declaration.type === 'FunctionDeclaration') {
-        const f = declaration as N.FunctionDeclaration;
+      if (isMaybeAnonymousDeclarationKind(declaration)) {
+        const f = declaration;
         if (f.id === null) {
-          f.id = j.identifier('exportName');
+          f.id = j.identifier(exportNameFor(declaration.type));
         }
       }
       const namedExportDeclaration = j.exportNamedDeclaration(declaration);
@@ -61,7 +60,7 @@ const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toChec
 };
 
 const convertDefaultExportExpressionToNamedExport = (j: JSCodeshift, declaration: K.ExpressionKind, defaultExport: ASTPath<ExportDefaultDeclaration>) => {
-  const exportName = 'ExportName';
+  const exportName = exportNameFor(declaration.type);
   const replacementDeclaration = j.variableDeclaration('const', [
     j.variableDeclarator(j.identifier(exportName), declaration)
   ]);
@@ -69,6 +68,19 @@ const convertDefaultExportExpressionToNamedExport = (j: JSCodeshift, declaration
 };
 
 const isDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.DeclarationKind => {
-  const expressionTypes = ['ClassDeclaration', 'TSInterfaceDeclaration', 'FunctionDeclaration'];
-  return expressionTypes.includes(toCheck.type);
+  const expressionTypes = ['TSInterfaceDeclaration'];
+  return expressionTypes.includes(toCheck.type) || isMaybeAnonymousDeclarationKind(toCheck);
+};
+
+const isMaybeAnonymousDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is MaybeAnonymousDefaultExportDeclarations => {
+  return ['FunctionDeclaration', 'ClassDeclaration'].includes(toCheck.type);
+};
+
+const exportNameFor = (type: string): string => {
+  switch (type) {
+    case 'FunctionDeclaration':
+      return 'exportName';
+    default:
+      return 'ExportName'
+  }
 };

@@ -56,6 +56,11 @@ export const ExportName = call();`;
       const expected = `export interface TheInterface {}`;
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
+    test('anonymous class declaration default export', () => {
+      const input = `export default class {}`;
+      const expected = `export class ExportName {}`;
+      expect(transformedDefaultExport(input)).toEqual(expected);
+    });
     test('class declaration default export', () => {
       const input = `export default class TheClass {}`;
       const expected = `export class TheClass {}`;
