@@ -38,6 +38,11 @@ export default call();`;
 export const ExportName = call();`;
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
+    test('arrow function expression default export', () => {
+      const input = `export default () => {};`;
+      const expected = `export const exportName = () => {};`;
+      expect(transformedDefaultExport(input)).toEqual(expected);
+    });
   });
 
   describe('declarations', () => {

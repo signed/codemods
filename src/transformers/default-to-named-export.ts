@@ -26,12 +26,6 @@ export default (file: FileInfo, api: API, _options: Options) => {
       return;
     }
 
-    if (['FunctionDeclaration', 'ClassDeclaration'].includes(declaration.type)) {
-      const f = declaration as MaybeAnonymousDefaultExportDeclarations;
-      if (f.id === null) {
-
-      }
-    }
     if (isDeclarationKind(declaration)) {
       if (isMaybeAnonymousDeclarationKind(declaration)) {
         const f = declaration;
@@ -77,8 +71,10 @@ const isMaybeAnonymousDeclarationKind = (toCheck: K.DeclarationKind | K.Expressi
 };
 
 const exportNameFor = (type: string): string => {
+  console.log(type);
   switch (type) {
     case 'FunctionDeclaration':
+    case 'ArrowFunctionExpression':
       return 'exportName';
     default:
       return 'ExportName'

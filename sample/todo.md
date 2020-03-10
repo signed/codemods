@@ -1,6 +1,0 @@
-- function
-- arrow function
-- interface
-- number literal
-- (const) enum
-- import under symbol name or renamed
