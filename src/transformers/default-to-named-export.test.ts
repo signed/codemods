@@ -41,12 +41,12 @@ export const ExportName = call();`;
   });
 
   describe('declarations', () => {
-    test.skip('function declaration default export', () => {
+    test('anonymous function declaration default export', () => {
       const input = `export default function() {}`;
       const expected = `export function exportName() {}`;
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
-    test('named function declaration default export', () => {
+    test('function declaration default export', () => {
       const input = `export default function theName() {}`;
       const expected = `export function theName() {}`;
       expect(transformedDefaultExport(input)).toEqual(expected);

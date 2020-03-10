@@ -1,7 +1,9 @@
 import * as K from 'ast-types/gen/kinds';
+import * as N from 'ast-types/gen/nodes';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
 
 export const DoNotTransform = undefined;
+type DeclarationWithId = K.FunctionDeclarationKind | K.ClassDeclarationKind | K.TSInterfaceDeclarationKind
 
 export const parser: string = 'ts';
 
@@ -25,12 +27,23 @@ export default (file: FileInfo, api: API, _options: Options) => {
       return;
     }
 
-    if (['ClassDeclaration', 'TSInterfaceDeclaration', 'FunctionDeclaration'].includes(declaration.type)) {
-      const namedExportDeclaration = j.exportNamedDeclaration(declaration as K.DeclarationKind);
+    if (['FunctionDeclaration', 'ClassDeclaration'].includes(declaration.type)) {
+      const f = declaration as DeclarationWithId;
+      if (f.id === null) {
+
+      }
+    }
+    if (isDeclarationKind(declaration)) {
+      if (declaration.type === 'FunctionDeclaration') {
+        const f = declaration as N.FunctionDeclaration;
+        if (f.id === null) {
+          f.id = j.identifier('exportName');
+        }
+      }
+      const namedExportDeclaration = j.exportNamedDeclaration(declaration);
       j(defaultExport).replaceWith(namedExportDeclaration);
       return;
     }
-
     console.log('[skip] ' + declarationType);
   });
 
@@ -53,4 +66,9 @@ const convertDefaultExportExpressionToNamedExport = (j: JSCodeshift, declaration
     j.variableDeclarator(j.identifier(exportName), declaration)
   ]);
   j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
+};
+
+const isDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.DeclarationKind => {
+  const expressionTypes = ['ClassDeclaration', 'TSInterfaceDeclaration', 'FunctionDeclaration'];
+  return expressionTypes.includes(toCheck.type);
 };
