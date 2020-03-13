@@ -16,31 +16,16 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
   const j = api.jscodeshift;
   const root = j(file.source);
 
+  const banana = root.find(j.ExportDefaultDeclaration);
+  if (banana.size() === 0) {
+    return DoNotTransform;
+  }
   const getFirstNode = () => root.find(j.Program).get('body', 0).node;
   const originalFirstNode = getFirstNode();
   const comments = originalFirstNode.comments;
 
-  root.find(j.ExportDefaultDeclaration).forEach(defaultExport => {
-    const declarationType = defaultExport.value.declaration.type;
-    const declaration = defaultExport.value.declaration;
-    if (isExpressionKind(declaration)) {
-      convertDefaultExportExpressionToNamedExport(j, declaration, defaultExport, file.path);
-      return;
-    }
-
-    if (isDeclarationKind(declaration)) {
-      if (isMaybeAnonymousDeclarationKind(declaration)) {
-        const f = declaration;
-        if (f.id === null) {
-          f.id = j.identifier(exportNameFor(declaration.type, file.path));
-        }
-      }
-      const namedExportDeclaration = j.exportNamedDeclaration(declaration);
-      j(defaultExport).replaceWith(namedExportDeclaration);
-      return;
-    }
-    console.log('[skip] ' + declarationType);
-  });
+  const defaultExport: ASTPath<ExportDefaultDeclaration> = banana.paths()[0];
+  replaceWithNamedExport(defaultExport, j, file);
 
   const firstNodeAfterTransformation = getFirstNode();
   if (originalFirstNode !== firstNodeAfterTransformation) {
@@ -50,6 +35,28 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
   return root.toSource({ quote: 'single' });
 };
 export default transform
+
+const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, j: JSCodeshift, file: FileInfo) => {
+  const declarationType = defaultExport.value.declaration.type;
+  const declaration = defaultExport.value.declaration;
+  if (isExpressionKind(declaration)) {
+    convertDefaultExportExpressionToNamedExport(j, declaration, defaultExport, file.path);
+    return;
+  }
+
+  if (isDeclarationKind(declaration)) {
+    if (isMaybeAnonymousDeclarationKind(declaration)) {
+      const f = declaration;
+      if (f.id === null) {
+        f.id = j.identifier(exportNameFor(declaration.type, file.path));
+      }
+    }
+    const namedExportDeclaration = j.exportNamedDeclaration(declaration);
+    j(defaultExport).replaceWith(namedExportDeclaration);
+    return;
+  }
+  console.log('[skip] ' + declarationType);
+};
 
 const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.ExpressionKind => {
   const expressionTypes = ['Identifier', 'FunctionExpression', 'ThisExpression', 'ArrayExpression', 'ObjectExpression', 'Literal', 'SequenceExpression', 'UnaryExpression', 'BinaryExpression', 'AssignmentExpression', 'UpdateExpression', 'LogicalExpression', 'ConditionalExpression', 'NewExpression', 'CallExpression', 'MemberExpression', 'ArrowFunctionExpression', 'YieldExpression', 'GeneratorExpression', 'ComprehensionExpression', 'ClassExpression', 'TaggedTemplateExpression', 'TemplateLiteral', 'AwaitExpression', 'JSXIdentifier', 'JSXExpressionContainer', 'JSXMemberExpression', 'JSXElement', 'JSXFragment', 'JSXText', 'JSXEmptyExpression', 'JSXSpreadChild', 'TypeCastExpression', 'DoExpression', 'Super', 'BindExpression', 'MetaProperty', 'ParenthesizedExpression', 'DirectiveLiteral', 'StringLiteral', 'NumericLiteral', 'BigIntLiteral', 'NullLiteral', 'BooleanLiteral', 'RegExpLiteral', 'PrivateName', 'Import', 'TSAsExpression', 'TSNonNullExpression', 'TSTypeParameter', 'TSTypeAssertion', 'OptionalMemberExpression', 'OptionalCallExpression'];
