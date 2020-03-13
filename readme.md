@@ -14,3 +14,6 @@
 - https://github.com/WolkSoftware/tsmod (abstraction on top of ts.morph)
 # Examples on how to use jscodeshift
 - https://stackoverflow.com/a/58429246
+
+# Replace default imports / exports with named imports / exports
+- only replace default imports if the source is in the project
