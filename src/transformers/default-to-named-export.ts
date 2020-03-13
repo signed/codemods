@@ -9,7 +9,7 @@ type MaybeAnonymousDefaultExportDeclarations = K.FunctionDeclarationKind | K.Cla
 export const parser: string = 'ts';
 
 // This function is called for each file you targeted with the CLI
-export default (file: FileInfo, api: API, _options: Options) => {
+export const transform = (file: FileInfo, api: API, _options: Options) => {
   if (file.path.endsWith('.d.ts')) {
     return DoNotTransform;
   }
@@ -48,7 +48,8 @@ export default (file: FileInfo, api: API, _options: Options) => {
   }
 
   return root.toSource({ quote: 'single' });
-}
+};
+export default transform
 
 const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.ExpressionKind => {
   const expressionTypes = ['Identifier', 'FunctionExpression', 'ThisExpression', 'ArrayExpression', 'ObjectExpression', 'Literal', 'SequenceExpression', 'UnaryExpression', 'BinaryExpression', 'AssignmentExpression', 'UpdateExpression', 'LogicalExpression', 'ConditionalExpression', 'NewExpression', 'CallExpression', 'MemberExpression', 'ArrowFunctionExpression', 'YieldExpression', 'GeneratorExpression', 'ComprehensionExpression', 'ClassExpression', 'TaggedTemplateExpression', 'TemplateLiteral', 'AwaitExpression', 'JSXIdentifier', 'JSXExpressionContainer', 'JSXMemberExpression', 'JSXElement', 'JSXFragment', 'JSXText', 'JSXEmptyExpression', 'JSXSpreadChild', 'TypeCastExpression', 'DoExpression', 'Super', 'BindExpression', 'MetaProperty', 'ParenthesizedExpression', 'DirectiveLiteral', 'StringLiteral', 'NumericLiteral', 'BigIntLiteral', 'NullLiteral', 'BooleanLiteral', 'RegExpLiteral', 'PrivateName', 'Import', 'TSAsExpression', 'TSNonNullExpression', 'TSTypeParameter', 'TSTypeAssertion', 'OptionalMemberExpression', 'OptionalCallExpression'];
