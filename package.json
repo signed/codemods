@@ -18,6 +18,7 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
-    "@types/node": "13.9.0"
+    "@types/node": "13.9.0",
+    "change-case": "4.1.1"
   }
 }

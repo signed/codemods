@@ -1,5 +1,7 @@
 import * as K from 'ast-types/gen/kinds';
+import { camelCase, pascalCase } from 'change-case';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
+import { basename, extname } from 'path';
 
 export const DoNotTransform = undefined;
 type MaybeAnonymousDefaultExportDeclarations = K.FunctionDeclarationKind | K.ClassDeclarationKind
@@ -22,7 +24,7 @@ export default (file: FileInfo, api: API, _options: Options) => {
     const declarationType = defaultExport.value.declaration.type;
     const declaration = defaultExport.value.declaration;
     if (isExpressionKind(declaration)) {
-      convertDefaultExportExpressionToNamedExport(j, declaration, defaultExport);
+      convertDefaultExportExpressionToNamedExport(j, declaration, defaultExport, file.path);
       return;
     }
 
@@ -30,7 +32,7 @@ export default (file: FileInfo, api: API, _options: Options) => {
       if (isMaybeAnonymousDeclarationKind(declaration)) {
         const f = declaration;
         if (f.id === null) {
-          f.id = j.identifier(exportNameFor(declaration.type));
+          f.id = j.identifier(exportNameFor(declaration.type, file.path));
         }
       }
       const namedExportDeclaration = j.exportNamedDeclaration(declaration);
@@ -53,8 +55,8 @@ const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toChec
   return expressionTypes.includes(toCheck.type);
 };
 
-const convertDefaultExportExpressionToNamedExport = (j: JSCodeshift, declaration: K.ExpressionKind, defaultExport: ASTPath<ExportDefaultDeclaration>) => {
-  const exportName = exportNameFor(declaration.type);
+const convertDefaultExportExpressionToNamedExport = (j: JSCodeshift, declaration: K.ExpressionKind, defaultExport: ASTPath<ExportDefaultDeclaration>, path: string) => {
+  const exportName = exportNameFor(declaration.type, path);
   const replacementDeclaration = j.variableDeclaration('const', [
     j.variableDeclarator(j.identifier(exportName), declaration)
   ]);
@@ -70,13 +72,13 @@ const isMaybeAnonymousDeclarationKind = (toCheck: K.DeclarationKind | K.Expressi
   return ['FunctionDeclaration', 'ClassDeclaration'].includes(toCheck.type);
 };
 
-const exportNameFor = (type: string): string => {
-  console.log(type);
+const exportNameFor = (type: string, path: string): string => {
+  const filename = basename(path, extname(path));
   switch (type) {
     case 'FunctionDeclaration':
     case 'ArrowFunctionExpression':
-      return 'exportName';
+      return camelCase(filename);
     default:
-      return 'ExportName'
+      return pascalCase(filename);
   }
 };
