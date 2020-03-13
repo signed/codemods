@@ -16,16 +16,17 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
   const j = api.jscodeshift;
   const root = j(file.source);
 
-  const banana = root.find(j.ExportDefaultDeclaration);
-  if (banana.size() === 0) {
+  const defaultExports = root.find(j.ExportDefaultDeclaration);
+  if (defaultExports.size() === 0) {
     return DoNotTransform;
   }
   const getFirstNode = () => root.find(j.Program).get('body', 0).node;
   const originalFirstNode = getFirstNode();
   const comments = originalFirstNode.comments;
 
-  const defaultExport: ASTPath<ExportDefaultDeclaration> = banana.paths()[0];
-  replaceWithNamedExport(defaultExport, j, file);
+  const defaultExport: ASTPath<ExportDefaultDeclaration> = defaultExports.paths()[0];
+  const exportName = exportNameFor(defaultExport, file.path);
+  replaceWithNamedExport(defaultExport, exportName, j);
 
   const firstNodeAfterTransformation = getFirstNode();
   if (originalFirstNode !== firstNodeAfterTransformation) {
@@ -34,21 +35,23 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
 
   return root.toSource({ quote: 'single' });
 };
-export default transform
+export default transform;
 
-const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, j: JSCodeshift, file: FileInfo) => {
-  const declarationType = defaultExport.value.declaration.type;
+const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, exportName: string, j: JSCodeshift) => {
   const declaration = defaultExport.value.declaration;
+  const declarationType = declaration.type;
   if (isExpressionKind(declaration)) {
-    convertDefaultExportExpressionToNamedExport(j, declaration, defaultExport, file.path);
+    const replacementDeclaration = j.variableDeclaration('const', [
+      j.variableDeclarator(j.identifier(exportName), declaration)
+    ]);
+    j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
     return;
   }
 
   if (isDeclarationKind(declaration)) {
     if (isMaybeAnonymousDeclarationKind(declaration)) {
-      const f = declaration;
-      if (f.id === null) {
-        f.id = j.identifier(exportNameFor(declaration.type, file.path));
+      if (declaration.id === null) {
+        declaration.id = j.identifier(exportName);
       }
     }
     const namedExportDeclaration = j.exportNamedDeclaration(declaration);
@@ -63,14 +66,6 @@ const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toChec
   return expressionTypes.includes(toCheck.type);
 };
 
-const convertDefaultExportExpressionToNamedExport = (j: JSCodeshift, declaration: K.ExpressionKind, defaultExport: ASTPath<ExportDefaultDeclaration>, path: string) => {
-  const exportName = exportNameFor(declaration.type, path);
-  const replacementDeclaration = j.variableDeclaration('const', [
-    j.variableDeclarator(j.identifier(exportName), declaration)
-  ]);
-  j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
-};
-
 const isDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.DeclarationKind => {
   const expressionTypes = ['TSInterfaceDeclaration'];
   return expressionTypes.includes(toCheck.type) || isMaybeAnonymousDeclarationKind(toCheck);
@@ -80,7 +75,8 @@ const isMaybeAnonymousDeclarationKind = (toCheck: K.DeclarationKind | K.Expressi
   return ['FunctionDeclaration', 'ClassDeclaration'].includes(toCheck.type);
 };
 
-const exportNameFor = (type: string, path: string): string => {
+const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string) => {
+  const type = defaultExport.value.declaration.type;
   const filename = basename(path, extname(path));
   switch (type) {
     case 'FunctionDeclaration':
