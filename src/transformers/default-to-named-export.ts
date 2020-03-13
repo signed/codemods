@@ -39,7 +39,6 @@ export default transform;
 
 const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, exportName: string, j: JSCodeshift) => {
   const declaration = defaultExport.value.declaration;
-  const declarationType = declaration.type;
   if (isExpressionKind(declaration)) {
     const replacementDeclaration = j.variableDeclaration('const', [
       j.variableDeclarator(j.identifier(exportName), declaration)
@@ -58,7 +57,7 @@ const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>
     j(defaultExport).replaceWith(namedExportDeclaration);
     return;
   }
-  console.log('[skip] ' + declarationType);
+  console.log('[skip] ' + declaration.type);
 };
 
 const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.ExpressionKind => {
