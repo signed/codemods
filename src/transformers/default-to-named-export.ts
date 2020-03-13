@@ -46,18 +46,16 @@ const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>
     j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
     return;
   }
-
   if (isDeclarationKind(declaration)) {
     if (isMaybeAnonymousDeclarationKind(declaration)) {
       if (declaration.id === null) {
         declaration.id = j.identifier(exportName);
       }
     }
-    const namedExportDeclaration = j.exportNamedDeclaration(declaration);
-    j(defaultExport).replaceWith(namedExportDeclaration);
+    j(defaultExport).replaceWith(j.exportNamedDeclaration(declaration));
     return;
   }
-  console.log('[skip] ' + declaration.type);
+  console.log('[skip] ' + defaultExport.value.declaration.type);
 };
 
 const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.ExpressionKind => {
