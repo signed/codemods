@@ -6,7 +6,7 @@ describe('replace default export with named export', () => {
   let path = '';
   const transformedDefaultExport = (input: string) => {
     const noOptions = {};
-    const fileInfo = { source: input.trim(), path };
+    const fileInfo = { source: input, path };
     return transform(fileInfo, apiForTypescript(), noOptions);
   };
 
