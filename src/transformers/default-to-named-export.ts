@@ -37,6 +37,18 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
 };
 export default transform;
 
+const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string) => {
+  const type = defaultExport.value.declaration.type;
+  const filename = basename(path, extname(path));
+  switch (type) {
+    case 'FunctionDeclaration':
+    case 'ArrowFunctionExpression':
+      return camelCase(filename);
+    default:
+      return pascalCase(filename);
+  }
+};
+
 const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, exportName: string, j: JSCodeshift) => {
   const declaration = defaultExport.value.declaration;
   if (isExpressionKind(declaration)) {
@@ -70,16 +82,4 @@ const isDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toChe
 
 const isMaybeAnonymousDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is MaybeAnonymousDefaultExportDeclarations => {
   return ['FunctionDeclaration', 'ClassDeclaration'].includes(toCheck.type);
-};
-
-const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string) => {
-  const type = defaultExport.value.declaration.type;
-  const filename = basename(path, extname(path));
-  switch (type) {
-    case 'FunctionDeclaration':
-    case 'ArrowFunctionExpression':
-      return camelCase(filename);
-    default:
-      return pascalCase(filename);
-  }
 };
