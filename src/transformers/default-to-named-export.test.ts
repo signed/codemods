@@ -25,7 +25,7 @@ export default 'banana';`;
   });
 
   test('derive export name from file name', () => {
-    path = '/strip/this/out/this-is-the-file.ts';
+    path = 'strip/this/out/this-is-the-file.ts';
     expect(transformedDefaultExport(`export default 'banana';`)).toStartWith('export const ThisIsTheFile =')
   });
 
