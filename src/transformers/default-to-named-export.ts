@@ -2,8 +2,8 @@ import * as K from 'ast-types/gen/kinds';
 import { camelCase, pascalCase } from 'change-case';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
 import { basename, extname } from 'path';
+import { DoNotTransform } from './jscodeshift-constants';
 
-export const DoNotTransform = undefined;
 type MaybeAnonymousDefaultExportDeclarations = K.FunctionDeclarationKind | K.ClassDeclarationKind
 
 export const parser: string = 'ts';
