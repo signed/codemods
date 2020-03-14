@@ -1,7 +1,6 @@
 import * as K from 'ast-types/gen/kinds';
-import { camelCase, pascalCase } from 'change-case';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
-import { basename, extname } from 'path';
+import { exportNameFor } from './default-to-named';
 import { DoNotTransform } from './jscodeshift-constants';
 
 type MaybeAnonymousDefaultExportDeclarations = K.FunctionDeclarationKind | K.ClassDeclarationKind
@@ -36,18 +35,6 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
   return root.toSource({ quote: 'single' });
 };
 export default transform;
-
-const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string) => {
-  const type = defaultExport.value.declaration.type;
-  const filename = basename(path, extname(path));
-  switch (type) {
-    case 'FunctionDeclaration':
-    case 'ArrowFunctionExpression':
-      return camelCase(filename);
-    default:
-      return pascalCase(filename);
-  }
-};
 
 const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, exportName: string, j: JSCodeshift) => {
   const declaration = defaultExport.value.declaration;
