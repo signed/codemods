@@ -13,11 +13,12 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
   const root = j(file.source);
   root.find(j.ImportDefaultSpecifier).forEach((defaultImport) => {
     let exportName = exportNameResolver({}, {});
-    let localName: Identifier | null = null;
-    if (defaultImport.value.local?.name !== exportName) {
-      localName = j.identifier('LocalName');
+    let localNameIdentifier: Identifier | null = null;
+    let localName = defaultImport.value.local?.name;
+    if ( localName !== undefined && localName !== exportName) {
+      localNameIdentifier = j.identifier(localName);
     }
-    defaultImport.replace(j.importSpecifier(j.identifier(exportName), localName));
+    defaultImport.replace(j.importSpecifier(j.identifier(exportName), localNameIdentifier));
   });
   return root.toSource({ quote: 'single' });
 };
