@@ -20,4 +20,10 @@ describe('replace default import with named import', () => {
     const expected = `import { DeclaresDefaultExport } from './declares-default-export';`;
     expect(transformDefaultImports(input)).toEqual(expected);
   });
+  test('use an alias if the local name does not match the export name', () => {
+    exportName = 'doesNotMatch';
+    const input = `import LocalName from './declares-default-export'`;
+    const expected = `import { doesNotMatch as LocalName } from './declares-default-export';`;
+    expect(transformDefaultImports(input)).toEqual(expected);
+  });
 });
