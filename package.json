@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "start": "ts-node sample/consumer.ts",
-    "transform": "jscodeshift --dry --print --extensions=ts --transform src/transformers/default-to-named-export.ts sample/",
+    "transform": "yarn transform:default-imports && yarn transform:default-exports",
+    "transform:default-imports": "jscodeshift --extensions=ts --transform src/transformers/default-to-named-import.ts sample/",
+    "transform:default-exports": "jscodeshift --extensions=ts --transform src/transformers/default-to-named-export.ts sample/",
     "test": "jest"
   },
   "devDependencies": {
@@ -18,7 +20,7 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
-    "@types/node": "13.9.0",
+    "@types/node": "13.9.1",
     "change-case": "4.1.1"
   }
 }
