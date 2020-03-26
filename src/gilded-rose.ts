@@ -93,19 +93,24 @@ export class Program {
   }
 }
 
+export class SpecialItems {
+  static agedBrie = () => new Item('Aged Brie', 2, 0);
+  static backstagePasses = () => new Item('Backstage passes to a TAFKAL80ETC concert', 15, 20);
+  static sulfurasHand = () => new Item('Sulfuras, Hand of Ragnaros', 0, 80);
+}
+
 console.log('OMGHAI!');
 
 const Items: Array<Item> = [
   new Item('+5 Dexterity Vest', 10, 20),
-  new Item('Aged Brie', 2, 0),
+  SpecialItems.agedBrie(),
   new Item('Elixir of the Mongoose', 5, 7),
-  new Item('Sulfuras, Hand of Ragnaros', 0, 80),
-  new Item('Backstage passes to a TAFKAL80ETC concert', 15, 20),
+  (SpecialItems.sulfurasHand()),
+  (SpecialItems.backstagePasses()),
   new Item('Conjured Mana Cake', 3, 6)
 ];
 
 var app = new Program(Items);
 app.UpdateQuality();
-
 
 
