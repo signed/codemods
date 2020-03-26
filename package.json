@@ -6,7 +6,8 @@
     "transform": "yarn transform:default-imports && yarn transform:default-exports",
     "transform:default-imports": "jscodeshift --extensions=ts --transform src/transformers/default-to-named-import.ts sample/",
     "transform:default-exports": "jscodeshift --extensions=ts --transform src/transformers/default-to-named-export.ts sample/",
-    "test": "jest"
+    "test": "jest",
+    "rose": "ts-node src/gilded-rose.ts"
   },
   "devDependencies": {
     "@babel/preset-env": "7.9.0",
