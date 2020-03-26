@@ -29,11 +29,17 @@ describe('safety net', () => {
       const items = program.updateAndReturnRemainingItems();
       expect(items[0].Quality).toBe(2);
     });
+    test('increases quality bv two after sell in was reached ', () => {
+      const program = new Program([agedBrie({ SellIn: 0, Quality: 0 })]);
+      const items = program.updateAndReturnRemainingItems();
+      expect(items[0].Quality).toBe(2);
+    });
     test('tops out at quality of 50', () => {
       const program = new Program([agedBrie({ Quality: 50 })]);
       const items = program.updateAndReturnRemainingItems();
       expect(items[0].Quality).toBe(50);
     });
+
   });
 
   describe('backstage passes', () => {
