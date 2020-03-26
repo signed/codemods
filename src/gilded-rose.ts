@@ -33,6 +33,10 @@ export class Item {
 
 export const MaximumItemQuality = 50;
 
+const AgedBrie = 'Aged Brie';
+const BackstagePasses = 'Backstage passes to a TAFKAL80ETC concert';
+const SulfurasHand = 'Sulfuras, Hand of Ragnaros';
+
 export class Program {
   constructor(private Items: Array<Item>) {
   }
@@ -47,9 +51,9 @@ export class Program {
   }
 
   private update(item: Item) {
-    if (item.Name != 'Aged Brie' && item.Name != 'Backstage passes to a TAFKAL80ETC concert') {
+    if (item.Name != AgedBrie && item.Name != BackstagePasses) {
       if (item.Quality > 0) {
-        if (item.Name != 'Sulfuras, Hand of Ragnaros') {
+        if (item.Name != SulfurasHand) {
           item.Quality = item.Quality - 1;
         }
       }
@@ -57,7 +61,7 @@ export class Program {
       if (item.Quality < MaximumItemQuality) {
         item.Quality = item.Quality + 1;
 
-        if (item.Name == 'Backstage passes to a TAFKAL80ETC concert') {
+        if (item.Name == BackstagePasses) {
           if (item.SellIn < 11) {
             if (item.Quality < MaximumItemQuality) {
               item.Quality = item.Quality + 1;
@@ -74,10 +78,10 @@ export class Program {
     }
 
     if (item.SellIn <= 0) {
-      if (item.Name != 'Aged Brie') {
-        if (item.Name != 'Backstage passes to a TAFKAL80ETC concert') {
+      if (item.Name != AgedBrie) {
+        if (item.Name != BackstagePasses) {
           if (item.Quality > 0) {
-            if (item.Name != 'Sulfuras, Hand of Ragnaros') {
+            if (item.Name != SulfurasHand) {
               item.Quality = item.Quality - 1;
             }
           }
@@ -90,16 +94,16 @@ export class Program {
         }
       }
     }
-    if (item.Name != 'Sulfuras, Hand of Ragnaros') {
+    if (item.Name != SulfurasHand) {
       item.SellIn = item.SellIn - 1;
     }
   }
 }
 
 export class SpecialItems {
-  static agedBrie = () => new Item('Aged Brie', 2, 0);
-  static backstagePasses = () => new Item('Backstage passes to a TAFKAL80ETC concert', 15, 20);
-  static sulfurasHand = () => new Item('Sulfuras, Hand of Ragnaros', 0, 80);
+  static agedBrie = () => new Item(AgedBrie, 2, 0);
+  static backstagePasses = () => new Item(BackstagePasses, 15, 20);
+  static sulfurasHand = () => new Item(SulfurasHand, 0, 80);
 }
 
 console.log('OMGHAI!');
