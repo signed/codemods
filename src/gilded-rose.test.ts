@@ -23,6 +23,18 @@ describe('safety net', () => {
     expect(items[0].Quality).toBe(0);
   });
 
+  test('update all items in the shop', () => {
+    const one = new Item('one', 5, 20);
+    const two = new Item('two', 7, 15);
+    const program = new Program([one, two]);
+
+    const items = program.updateAndReturnRemainingItems();
+    expect(items[0].SellIn).toBe(4);
+    expect(items[0].Quality).toBe(19);
+    expect(items[1].SellIn).toBe(6);
+    expect(items[1].Quality).toBe(14);
+  });
+
   describe('aged brie', () => {
     test('increases quality over time', () => {
       const program = new Program([agedBrie({ Quality: 1 })]);
