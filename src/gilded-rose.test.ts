@@ -1,4 +1,4 @@
-import { Item, Program, SpecialItems } from './gilded-rose';
+import { Item, MaximumItemQuality, Program, SpecialItems } from './gilded-rose';
 
 const agedBrie = (override: Partial<Omit<Item, 'Name'>>): Item => {
   const item = SpecialItems.agedBrie();
@@ -47,11 +47,10 @@ describe('safety net', () => {
       expect(items[0].Quality).toBe(2);
     });
     test('tops out at quality of 50', () => {
-      const program = new Program([agedBrie({ Quality: 50 })]);
+      const program = new Program([agedBrie({ Quality: MaximumItemQuality })]);
       const items = program.updateAndReturnRemainingItems();
-      expect(items[0].Quality).toBe(50);
+      expect(items[0].Quality).toBe(MaximumItemQuality);
     });
-
   });
 
   describe('backstage passes', () => {

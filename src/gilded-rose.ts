@@ -31,6 +31,8 @@ export class Item {
   }
 }
 
+export const MaximumItemQuality = 50;
+
 export class Program {
   constructor(private Items: Array<Item>) {
   }
@@ -52,18 +54,18 @@ export class Program {
         }
       }
     } else {
-      if (item.Quality < 50) {
+      if (item.Quality < MaximumItemQuality) {
         item.Quality = item.Quality + 1;
 
         if (item.Name == 'Backstage passes to a TAFKAL80ETC concert') {
           if (item.SellIn < 11) {
-            if (item.Quality < 50) {
+            if (item.Quality < MaximumItemQuality) {
               item.Quality = item.Quality + 1;
             }
           }
 
           if (item.SellIn < 6) {
-            if (item.Quality < 50) {
+            if (item.Quality < MaximumItemQuality) {
               item.Quality = item.Quality + 1;
             }
           }
@@ -83,7 +85,7 @@ export class Program {
           item.Quality = item.Quality - item.Quality;
         }
       } else {
-        if (item.Quality < 50) {
+        if (item.Quality < MaximumItemQuality) {
           item.Quality = item.Quality + 1;
         }
       }
