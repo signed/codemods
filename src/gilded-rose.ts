@@ -41,9 +41,7 @@ export class Program {
   }
 
   public UpdateQuality(): void {
-    for (let i = 0; i < this.Items.length; i++) {
-      this.update(this.Items[i]);
-    }
+    this.Items.forEach(this.update);
   }
 
   private update(item: Item) {
