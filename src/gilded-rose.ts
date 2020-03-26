@@ -73,11 +73,7 @@ export class Program {
       }
     }
 
-    if (item.Name != 'Sulfuras, Hand of Ragnaros') {
-      item.SellIn = item.SellIn - 1;
-    }
-
-    if (item.SellIn < 0) {
+    if (item.SellIn <= 0) {
       if (item.Name != 'Aged Brie') {
         if (item.Name != 'Backstage passes to a TAFKAL80ETC concert') {
           if (item.Quality > 0) {
@@ -93,6 +89,9 @@ export class Program {
           item.Quality = item.Quality + 1;
         }
       }
+    }
+    if (item.Name != 'Sulfuras, Hand of Ragnaros') {
+      item.SellIn = item.SellIn - 1;
     }
   }
 }
