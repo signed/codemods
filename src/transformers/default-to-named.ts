@@ -10,7 +10,8 @@ export type Importer = { path: string, importString: string };
  */
 export type ExportNameResolver = (importer: Importer) => ExportName
 
-export const defaultExportNameResolver: ExportNameResolver = (): ExportName => {
+export const defaultExportNameResolver: ExportNameResolver = (importer: Importer): ExportName => {
+  // todo resolve file an determine export name of default export
   return 'StandInExportName';
 };
 
