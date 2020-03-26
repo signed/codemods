@@ -66,6 +66,16 @@ describe('safety net', () => {
     });
   });
 
+  describe('sulfuras hand', () => {
+    test('never decreases in quality', () => {
+      const item = SpecialItems.sulfurasHand();
+      expect((new Program([new Item(item.Name, 5, 200)]).updateAndReturnRemainingItems())[0].SellIn).toBe(5);
+      expect((new Program([new Item(item.Name, 5, 200)]).updateAndReturnRemainingItems())[0].Quality).toBe(200);
+      expect((new Program([new Item(item.Name, -1, 200)]).updateAndReturnRemainingItems())[0].Quality).toBe(200);
+      expect((new Program([new Item(item.Name, 0, 200)]).updateAndReturnRemainingItems())[0].Quality).toBe(200);
+    });
+  });
+
   describe('common items', () => {
     test('decrease quality by one each day as long as sell in is not reached', () => {
       const commonItem = new Item('any common item', 1, 10);
