@@ -47,18 +47,18 @@ interface ItemUpdater {
   update(item: Item): ItemUpdate;
 }
 
+const applyUpdateTo = (item: Item, itemUpdate: { SellInAdjustmentAmount: number; QualityAdjustmentAmount: number }) => {
+  const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
+  item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
+  item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
+};
+
 class SulfurasUpdater implements ItemUpdater {
   public update(item: Item) {
-    const itemUpdate = {
+    return {
       QualityAdjustmentAmount: 0,
       SellInAdjustmentAmount: 0
-    };
-
-    const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
-    item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
-    item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
-
-    return itemUpdate
+    }
   }
 }
 
@@ -67,32 +67,20 @@ const isPassedSellIn = (item: Item) => item.SellIn <= 0;
 class AgedBrieUpdater implements ItemUpdater {
   public update(item: Item) {
     const adjustmentAmount = isPassedSellIn(item) ? 2 : 1;
-    const itemUpdate = {
+    return {
       QualityAdjustmentAmount: adjustmentAmount,
       SellInAdjustmentAmount: -1
-    };
-
-    const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
-    item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
-    item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
-
-    return itemUpdate
+    }
   }
 }
 
 class BackstagePassesUpdater implements ItemUpdater {
   public update(item: Item) {
     let adjustmentAmount = BackstagePassesUpdater.adjustmentAmountFor(item);
-    const itemUpdate = {
+    return {
       QualityAdjustmentAmount: adjustmentAmount,
       SellInAdjustmentAmount: -1
-    };
-
-    const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
-    item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
-    item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
-
-    return itemUpdate
+    }
   }
 
   private static adjustmentAmountFor(item: Item) {
@@ -112,16 +100,10 @@ class BackstagePassesUpdater implements ItemUpdater {
 class CommonItemUpdater implements ItemUpdater {
   public update(item: Item) {
     const adjustmentAmount = isPassedSellIn(item) ? -2 : -1;
-    const itemUpdate = {
+    return {
       QualityAdjustmentAmount: adjustmentAmount,
       SellInAdjustmentAmount: -1
-    };
-
-    const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
-    item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
-    item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
-
-    return itemUpdate
+    }
   }
 }
 
@@ -149,7 +131,8 @@ export class Program {
 
   public UpdateQuality(): void {
     this.Items.forEach(item => {
-      updaterForItem(item).update(item);
+      const update = updaterForItem(item).update(item);
+      applyUpdateTo(item, update);
     });
   }
 }
@@ -171,7 +154,7 @@ const Items: Array<Item> = [
   new Item('Conjured Mana Cake', 3, 6)
 ];
 
-var app = new Program(Items);
+const app = new Program(Items);
 app.UpdateQuality();
 
 
