@@ -81,6 +81,22 @@ class BackstagePassesUpdater {
   }
 }
 
+class CommonItemUpdater {
+  public update(item: Item) {
+    if (item.Quality > 0) {
+      item.Quality = item.Quality - 1;
+    }
+
+    if (item.SellIn <= 0) {
+      if (item.Quality > 0) {
+        item.Quality = item.Quality - 1;
+      }
+    }
+    item.SellIn = item.SellIn - 1;
+  }
+
+}
+
 export class Program {
   constructor(private Items: Array<Item>) {
   }
@@ -105,21 +121,9 @@ export class Program {
         new BackstagePassesUpdater().update(item);
         return;
       }
-      Program.update(item);
+      new CommonItemUpdater().update(item);
+      return;
     });
-  }
-
-  private static update(item: Item) {
-    if (item.Quality > 0) {
-      item.Quality = item.Quality - 1;
-    }
-
-    if (item.SellIn <= 0) {
-      if (item.Quality > 0) {
-        item.Quality = item.Quality - 1;
-      }
-    }
-    item.SellIn = item.SellIn - 1;
   }
 }
 
