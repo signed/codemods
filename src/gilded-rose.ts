@@ -37,13 +37,23 @@ const AgedBrie = 'Aged Brie';
 const BackstagePasses = 'Backstage passes to a TAFKAL80ETC concert';
 const SulfurasHand = 'Sulfuras, Hand of Ragnaros';
 
-interface ItemUpdater {
-  update(item: Item): void;
+class SulfurasUpdater{
+  public update(_item: Item) {
+    // do nothing
+  }
 }
 
-class SulfurasUpdater implements ItemUpdater{
+class AgedBrieUpdater {
   public update(item: Item) {
-    // do nothing
+    if (item.Quality < MaximumItemQuality) {
+      item.Quality = item.Quality + 1;
+    }
+    if (item.SellIn <= 0) {
+      if (item.Quality < MaximumItemQuality) {
+        item.Quality = item.Quality + 1;
+      }
+    }
+    item.SellIn = item.SellIn - 1;
   }
 }
 
@@ -62,15 +72,17 @@ export class Program {
         new SulfurasUpdater().update(item);
         return;
       }
+      if (item.Name == AgedBrie) {
+        new AgedBrieUpdater().update(item);
+        return;
+      }
       Program.update(item);
     });
   }
 
   private static update(item: Item) {
     const isBackstagePasses = item.Name == BackstagePasses;
-    const isAgedBrie = item.Name == AgedBrie;
-
-    if (!isAgedBrie && !isBackstagePasses) {
+    if (!isBackstagePasses) {
       if (item.Quality > 0) {
         item.Quality = item.Quality - 1;
       }
@@ -95,18 +107,12 @@ export class Program {
     }
 
     if (item.SellIn <= 0) {
-      if (!isAgedBrie) {
-        if (!isBackstagePasses) {
-          if (item.Quality > 0) {
-            item.Quality = item.Quality - 1;
-          }
-        } else {
-          item.Quality = item.Quality - item.Quality;
+      if (!isBackstagePasses) {
+        if (item.Quality > 0) {
+          item.Quality = item.Quality - 1;
         }
       } else {
-        if (item.Quality < MaximumItemQuality) {
-          item.Quality = item.Quality + 1;
-        }
+        item.Quality = item.Quality - item.Quality;
       }
     }
     item.SellIn = item.SellIn - 1;
