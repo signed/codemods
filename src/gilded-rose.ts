@@ -61,25 +61,23 @@ class AgedBrieUpdater implements ItemUpdater {
 
 class BackstagePassesUpdater implements ItemUpdater {
   public update(item: Item) {
-    if (item.Quality < MaximumItemQuality) {
-      item.Quality = item.Quality + 1;
-
-      if (item.SellIn < 11) {
-        if (item.Quality < MaximumItemQuality) {
-          item.Quality = item.Quality + 1;
-        }
-      }
-      if (item.SellIn < 6) {
-        if (item.Quality < MaximumItemQuality) {
-          item.Quality = item.Quality + 1;
-        }
-      }
-    }
-
-    if (isPassedSellIn(item)) {
-      item.Quality = item.Quality - item.Quality;
-    }
+    let adjustmentAmount = BackstagePassesUpdater.adjustmentAmountFor(item);
+    const adjustedQuality = item.Quality + adjustmentAmount;
+    item.Quality = Math.min(MaximumItemQuality, adjustedQuality);
     item.SellIn = item.SellIn - 1;
+  }
+
+  private static adjustmentAmountFor(item: Item) {
+    if (isPassedSellIn(item)) {
+      return item.Quality * -1;
+    }
+    if (item.SellIn <= 5) {
+      return 3;
+    }
+    if (item.SellIn <= 10) {
+      return 2;
+    }
+    return 1;
   }
 }
 

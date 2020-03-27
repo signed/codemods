@@ -75,6 +75,11 @@ describe('safety net', () => {
       const item = SpecialItems.backstagePasses();
       expect((new Program([new Item(item.Name, 0, 200)]).updateAndReturnRemainingItems())[0].Quality).toBe(0);
     });
+
+    test('quality should never go over max quality', () => {
+      const item = SpecialItems.backstagePasses();
+      expect((new Program([new Item(item.Name, 20, MaximumItemQuality)]).updateAndReturnRemainingItems())[0].Quality).toBe(50);
+    });
   });
 
   describe('sulfuras hand', () => {
