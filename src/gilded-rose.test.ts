@@ -85,10 +85,10 @@ describe('safety net', () => {
   describe('sulfuras hand', () => {
     test('never decreases in quality', () => {
       const item = SpecialItems.sulfurasHand();
-      expect((new Program([new Item(item.Name, 5, 200)]).updateAndReturnRemainingItems())[0].SellIn).toBe(5);
-      expect((new Program([new Item(item.Name, 5, 200)]).updateAndReturnRemainingItems())[0].Quality).toBe(200);
-      expect((new Program([new Item(item.Name, -1, 200)]).updateAndReturnRemainingItems())[0].Quality).toBe(200);
-      expect((new Program([new Item(item.Name, 0, 200)]).updateAndReturnRemainingItems())[0].Quality).toBe(200);
+      expect((new Program([new Item(item.Name, 5, 41)]).updateAndReturnRemainingItems())[0].SellIn).toBe(5);
+      expect((new Program([new Item(item.Name, 5, 42)]).updateAndReturnRemainingItems())[0].Quality).toBe(42);
+      expect((new Program([new Item(item.Name, -1, 43)]).updateAndReturnRemainingItems())[0].Quality).toBe(43);
+      expect((new Program([new Item(item.Name, 0, 44)]).updateAndReturnRemainingItems())[0].Quality).toBe(44);
     });
   });
 

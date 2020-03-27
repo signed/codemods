@@ -48,11 +48,17 @@ interface ItemUpdater {
 }
 
 class SulfurasUpdater implements ItemUpdater {
-  public update(_item: Item) {
-    return {
+  public update(item: Item) {
+    const itemUpdate = {
       QualityAdjustmentAmount: 0,
       SellInAdjustmentAmount: 0
-    }
+    };
+
+    const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
+    item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
+    item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
+
+    return itemUpdate
   }
 }
 
@@ -65,9 +71,11 @@ class AgedBrieUpdater implements ItemUpdater {
       QualityAdjustmentAmount: adjustmentAmount,
       SellInAdjustmentAmount: -1
     };
+
     const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
-    item.Quality = Math.min(MaximumItemQuality, adjustedQuality);
+    item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
     item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
+
     return itemUpdate
   }
 }
@@ -81,8 +89,9 @@ class BackstagePassesUpdater implements ItemUpdater {
     };
 
     const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
-    item.Quality = Math.min(MaximumItemQuality, adjustedQuality);
+    item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
     item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
+
     return itemUpdate
   }
 
@@ -109,7 +118,7 @@ class CommonItemUpdater implements ItemUpdater {
     };
 
     const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
-    item.Quality = Math.max(adjustedQuality, MinimumItemQuality);
+    item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
     item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
 
     return itemUpdate
