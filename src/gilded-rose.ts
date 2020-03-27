@@ -84,15 +84,9 @@ class BackstagePassesUpdater implements ItemUpdater {
 
 class CommonItemUpdater implements ItemUpdater {
   public update(item: Item) {
-    if (item.Quality > 0) {
-      item.Quality = item.Quality - 1;
-    }
-
-    if (isPassedSellIn(item)) {
-      if (item.Quality > 0) {
-        item.Quality = item.Quality - 1;
-      }
-    }
+    const adjustmentAmount = isPassedSellIn(item) ? -2 : -1;
+    const adjustedQuality = item.Quality + adjustmentAmount;
+    item.Quality = Math.max(adjustedQuality, 0);
     item.SellIn = item.SellIn - 1;
   }
 }
