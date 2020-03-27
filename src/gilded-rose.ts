@@ -37,6 +37,16 @@ const AgedBrie = 'Aged Brie';
 const BackstagePasses = 'Backstage passes to a TAFKAL80ETC concert';
 const SulfurasHand = 'Sulfuras, Hand of Ragnaros';
 
+interface ItemUpdater {
+  update(item: Item): void;
+}
+
+class SulfurasUpdater implements ItemUpdater{
+  public update(item: Item) {
+    // do nothing
+  }
+}
+
 export class Program {
   constructor(private Items: Array<Item>) {
   }
@@ -53,13 +63,14 @@ export class Program {
   private static update(item: Item) {
     const isBackstagePasses = item.Name == BackstagePasses;
     const isAgedBrie = item.Name == AgedBrie;
-    const isSulfurasHand = item.Name == SulfurasHand;
+    if(item.Name == SulfurasHand){
+      new SulfurasUpdater().update(item);
+      return;
+    }
 
     if (!isAgedBrie && !isBackstagePasses) {
       if (item.Quality > 0) {
-        if (!isSulfurasHand) {
-          item.Quality = item.Quality - 1;
-        }
+        item.Quality = item.Quality - 1;
       }
     } else {
       if (item.Quality < MaximumItemQuality) {
@@ -85,9 +96,7 @@ export class Program {
       if (!isAgedBrie) {
         if (!isBackstagePasses) {
           if (item.Quality > 0) {
-            if (!isSulfurasHand) {
-              item.Quality = item.Quality - 1;
-            }
+            item.Quality = item.Quality - 1;
           }
         } else {
           item.Quality = item.Quality - item.Quality;
@@ -98,9 +107,7 @@ export class Program {
         }
       }
     }
-    if (!isSulfurasHand) {
-      item.SellIn = item.SellIn - 1;
-    }
+    item.SellIn = item.SellIn - 1;
   }
 }
 
