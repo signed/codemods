@@ -38,13 +38,21 @@ const AgedBrie = 'Aged Brie';
 const BackstagePasses = 'Backstage passes to a TAFKAL80ETC concert';
 const SulfurasHand = 'Sulfuras, Hand of Ragnaros';
 
+interface ItemUpdate {
+  QualityAdjustmentAmount: number;
+  SellInAdjustmentAmount: number;
+}
+
 interface ItemUpdater {
-  update(item: Item): void;
+  update(item: Item): ItemUpdate;
 }
 
 class SulfurasUpdater implements ItemUpdater {
   public update(_item: Item) {
-    // do nothing
+    return {
+      QualityAdjustmentAmount: 0,
+      SellInAdjustmentAmount: 0
+    }
   }
 }
 
@@ -53,18 +61,29 @@ const isPassedSellIn = (item: Item) => item.SellIn <= 0;
 class AgedBrieUpdater implements ItemUpdater {
   public update(item: Item) {
     const adjustmentAmount = isPassedSellIn(item) ? 2 : 1;
-    const adjustedQuality = item.Quality + adjustmentAmount;
+    const itemUpdate = {
+      QualityAdjustmentAmount: adjustmentAmount,
+      SellInAdjustmentAmount: -1
+    };
+    const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
     item.Quality = Math.min(MaximumItemQuality, adjustedQuality);
-    item.SellIn = item.SellIn - 1;
+    item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
+    return itemUpdate
   }
 }
 
 class BackstagePassesUpdater implements ItemUpdater {
   public update(item: Item) {
     let adjustmentAmount = BackstagePassesUpdater.adjustmentAmountFor(item);
-    const adjustedQuality = item.Quality + adjustmentAmount;
+    const itemUpdate = {
+      QualityAdjustmentAmount: adjustmentAmount,
+      SellInAdjustmentAmount: -1
+    };
+
+    const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
     item.Quality = Math.min(MaximumItemQuality, adjustedQuality);
-    item.SellIn = item.SellIn - 1;
+    item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
+    return itemUpdate
   }
 
   private static adjustmentAmountFor(item: Item) {
@@ -84,9 +103,16 @@ class BackstagePassesUpdater implements ItemUpdater {
 class CommonItemUpdater implements ItemUpdater {
   public update(item: Item) {
     const adjustmentAmount = isPassedSellIn(item) ? -2 : -1;
-    const adjustedQuality = item.Quality + adjustmentAmount;
+    const itemUpdate = {
+      QualityAdjustmentAmount: adjustmentAmount,
+      SellInAdjustmentAmount: -1
+    };
+
+    const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
     item.Quality = Math.max(adjustedQuality, MinimumItemQuality);
-    item.SellIn = item.SellIn - 1;
+    item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
+
+    return itemUpdate
   }
 }
 
