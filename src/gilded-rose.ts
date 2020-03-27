@@ -37,13 +37,17 @@ const AgedBrie = 'Aged Brie';
 const BackstagePasses = 'Backstage passes to a TAFKAL80ETC concert';
 const SulfurasHand = 'Sulfuras, Hand of Ragnaros';
 
-class SulfurasUpdater{
+interface ItemUpdater {
+  update(item: Item): void;
+}
+
+class SulfurasUpdater implements ItemUpdater {
   public update(_item: Item) {
     // do nothing
   }
 }
 
-class AgedBrieUpdater {
+class AgedBrieUpdater implements ItemUpdater {
   public update(item: Item) {
     if (item.Quality < MaximumItemQuality) {
       item.Quality = item.Quality + 1;
@@ -57,7 +61,7 @@ class AgedBrieUpdater {
   }
 }
 
-class BackstagePassesUpdater {
+class BackstagePassesUpdater implements ItemUpdater {
   public update(item: Item) {
     if (item.Quality < MaximumItemQuality) {
       item.Quality = item.Quality + 1;
@@ -81,7 +85,7 @@ class BackstagePassesUpdater {
   }
 }
 
-class CommonItemUpdater {
+class CommonItemUpdater implements ItemUpdater {
   public update(item: Item) {
     if (item.Quality > 0) {
       item.Quality = item.Quality - 1;
@@ -94,35 +98,33 @@ class CommonItemUpdater {
     }
     item.SellIn = item.SellIn - 1;
   }
-
 }
+
+const updaterForItem = (item: Item): ItemUpdater => {
+  const updaters = new Map<string, ItemUpdater>();
+  updaters.set(BackstagePasses, new BackstagePassesUpdater());
+  updaters.set(AgedBrie, new AgedBrieUpdater());
+  updaters.set(SulfurasHand, new SulfurasUpdater());
+
+  const updater = updaters.get(item.Name);
+  if (updater === undefined) {
+    return new CommonItemUpdater();
+  }
+  return updater;
+};
 
 export class Program {
   constructor(private Items: Array<Item>) {
   }
 
-  public updateAndReturnRemainingItems (){
+  public updateAndReturnRemainingItems() {
     this.UpdateQuality();
     return this.Items;
   }
 
   public UpdateQuality(): void {
     this.Items.forEach(item => {
-      if(item.Name == SulfurasHand){
-        new SulfurasUpdater().update(item);
-        return;
-      }
-      if (item.Name == AgedBrie) {
-        new AgedBrieUpdater().update(item);
-        return;
-      }
-
-      if (item.Name == BackstagePasses) {
-        new BackstagePassesUpdater().update(item);
-        return;
-      }
-      new CommonItemUpdater().update(item);
-      return;
+      updaterForItem(item).update(item);
     });
   }
 }
