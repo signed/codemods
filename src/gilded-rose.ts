@@ -32,6 +32,7 @@ export class Item {
 }
 
 export const MaximumItemQuality = 50;
+export const MinimumItemQuality = 0;
 
 const AgedBrie = 'Aged Brie';
 const BackstagePasses = 'Backstage passes to a TAFKAL80ETC concert';
@@ -86,7 +87,7 @@ class CommonItemUpdater implements ItemUpdater {
   public update(item: Item) {
     const adjustmentAmount = isPassedSellIn(item) ? -2 : -1;
     const adjustedQuality = item.Quality + adjustmentAmount;
-    item.Quality = Math.max(adjustedQuality, 0);
+    item.Quality = Math.max(adjustedQuality, MinimumItemQuality);
     item.SellIn = item.SellIn - 1;
   }
 }

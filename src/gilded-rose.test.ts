@@ -1,4 +1,4 @@
-import { Item, MaximumItemQuality, Program, SpecialItems } from './gilded-rose';
+import { Item, MaximumItemQuality, MinimumItemQuality, Program, SpecialItems } from './gilded-rose';
 
 const agedBrie = (override: Partial<Omit<Item, 'Name'>>): Item => {
   const item = SpecialItems.agedBrie();
@@ -105,7 +105,7 @@ describe('safety net', () => {
       expect(items[0].Quality).toBe(8);
     });
     test('quality is never decreased below 0', () => {
-      const commonItem = new Item('any common item', 1, 0);
+      const commonItem = new Item('any common item', 1, MinimumItemQuality);
       const program = new Program([commonItem]);
 
       expect((program.updateAndReturnRemainingItems())[0].Quality).toBe(0);
