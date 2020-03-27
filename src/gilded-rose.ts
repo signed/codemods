@@ -47,9 +47,14 @@ interface ItemUpdater {
   update(item: Item): ItemUpdate;
 }
 
+const enforceMinimumAndMaximumItemQuality = (adjustedQuality: number) => {
+  const notSmallerThanMinimum = Math.max(adjustedQuality, MinimumItemQuality);
+  return Math.min(MaximumItemQuality, notSmallerThanMinimum);
+};
+
 const applyUpdateTo = (item: Item, itemUpdate: { SellInAdjustmentAmount: number; QualityAdjustmentAmount: number }) => {
   const adjustedQuality = item.Quality + itemUpdate.QualityAdjustmentAmount;
-  item.Quality = Math.min(MaximumItemQuality, Math.max(adjustedQuality, MinimumItemQuality));
+  item.Quality = enforceMinimumAndMaximumItemQuality(adjustedQuality);
   item.SellIn = item.SellIn + itemUpdate.SellInAdjustmentAmount;
 };
 
