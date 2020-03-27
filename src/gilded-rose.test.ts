@@ -117,4 +117,11 @@ describe('safety net', () => {
       expect((program.updateAndReturnRemainingItems())[0].Quality).toBe(0);
     });
   });
+
+  describe('conjured mana cake', () => {
+    test('decrease quality twice as fast as normal item', () => {
+      expect((new Program([(new Item(SpecialItems.conjuredManaCake().Name, 1, 10))]).updateAndReturnRemainingItems())[0].Quality).toBe(8);
+      expect((new Program([(new Item(SpecialItems.conjuredManaCake().Name, 0, 10))]).updateAndReturnRemainingItems())[0].Quality).toBe(6);
+    });
+  });
 });

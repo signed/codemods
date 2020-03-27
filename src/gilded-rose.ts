@@ -37,6 +37,7 @@ export const MinimumItemQuality = 0;
 const AgedBrie = 'Aged Brie';
 const BackstagePasses = 'Backstage passes to a TAFKAL80ETC concert';
 const SulfurasHand = 'Sulfuras, Hand of Ragnaros';
+const ConjuredManaCake = 'Conjured Mana Cake';
 
 interface ItemUpdate {
   QualityAdjustmentAmount: number;
@@ -102,6 +103,17 @@ class BackstagePassesUpdater implements ItemUpdater {
   }
 }
 
+class ConjuredManaCakeUpdater implements ItemUpdater {
+  private readonly commonItemUpdater = new CommonItemUpdater();
+  public createItemUpdateFor(item: Item) {
+    const update = this.commonItemUpdater.createItemUpdateFor(item);
+    return {
+      QualityAdjustmentAmount: update.QualityAdjustmentAmount * 2,
+      SellInAdjustmentAmount: update.SellInAdjustmentAmount
+    }
+  }
+}
+
 class CommonItemUpdater implements ItemUpdater {
   public createItemUpdateFor(item: Item) {
     const adjustmentAmount = isPassedSellIn(item) ? -2 : -1;
@@ -112,11 +124,13 @@ class CommonItemUpdater implements ItemUpdater {
   }
 }
 
+
 const updaterFor = (item: Item): ItemUpdater => {
   const updaters = new Map<string, ItemUpdater>();
   updaters.set(BackstagePasses, new BackstagePassesUpdater());
   updaters.set(AgedBrie, new AgedBrieUpdater());
   updaters.set(SulfurasHand, new SulfurasUpdater());
+  updaters.set(ConjuredManaCake, new ConjuredManaCakeUpdater());
 
   const updater = updaters.get(item.Name);
   if (updater === undefined) {
@@ -148,6 +162,7 @@ export class SpecialItems {
   static agedBrie = () => new Item(AgedBrie, 2, 0);
   static backstagePasses = () => new Item(BackstagePasses, 15, 20);
   static sulfurasHand = () => new Item(SulfurasHand, 0, 80);
+  static conjuredManaCake = () => new Item(ConjuredManaCake, 3, 6);
 }
 
 console.log('OMGHAI!');
@@ -156,9 +171,9 @@ const Items: Array<Item> = [
   new Item('+5 Dexterity Vest', 10, 20),
   SpecialItems.agedBrie(),
   new Item('Elixir of the Mongoose', 5, 7),
-  (SpecialItems.sulfurasHand()),
-  (SpecialItems.backstagePasses()),
-  new Item('Conjured Mana Cake', 3, 6)
+  SpecialItems.sulfurasHand(),
+  SpecialItems.backstagePasses(),
+  SpecialItems.conjuredManaCake()
 ];
 
 const app = new Program(Items);
