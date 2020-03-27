@@ -57,16 +57,18 @@ export class Program {
   }
 
   public UpdateQuality(): void {
-    this.Items.forEach(Program.update);
+    this.Items.forEach(item => {
+      if(item.Name == SulfurasHand){
+        new SulfurasUpdater().update(item);
+        return;
+      }
+      Program.update(item);
+    });
   }
 
   private static update(item: Item) {
     const isBackstagePasses = item.Name == BackstagePasses;
     const isAgedBrie = item.Name == AgedBrie;
-    if(item.Name == SulfurasHand){
-      new SulfurasUpdater().update(item);
-      return;
-    }
 
     if (!isAgedBrie && !isBackstagePasses) {
       if (item.Quality > 0) {
