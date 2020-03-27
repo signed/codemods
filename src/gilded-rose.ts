@@ -44,7 +44,7 @@ interface ItemUpdate {
 }
 
 interface ItemUpdater {
-  update(item: Item): ItemUpdate;
+  createItemUpdateFor(item: Item): ItemUpdate;
 }
 
 const enforceMinimumAndMaximumItemQuality = (adjustedQuality: number) => {
@@ -59,7 +59,7 @@ const applyUpdateTo = (item: Item, itemUpdate: { SellInAdjustmentAmount: number;
 };
 
 class SulfurasUpdater implements ItemUpdater {
-  public update(item: Item) {
+  public createItemUpdateFor(item: Item) {
     return {
       QualityAdjustmentAmount: 0,
       SellInAdjustmentAmount: 0
@@ -70,7 +70,7 @@ class SulfurasUpdater implements ItemUpdater {
 const isPassedSellIn = (item: Item) => item.SellIn <= 0;
 
 class AgedBrieUpdater implements ItemUpdater {
-  public update(item: Item) {
+  public createItemUpdateFor(item: Item) {
     const adjustmentAmount = isPassedSellIn(item) ? 2 : 1;
     return {
       QualityAdjustmentAmount: adjustmentAmount,
@@ -80,7 +80,7 @@ class AgedBrieUpdater implements ItemUpdater {
 }
 
 class BackstagePassesUpdater implements ItemUpdater {
-  public update(item: Item) {
+  public createItemUpdateFor(item: Item) {
     let adjustmentAmount = BackstagePassesUpdater.adjustmentAmountFor(item);
     return {
       QualityAdjustmentAmount: adjustmentAmount,
@@ -103,7 +103,7 @@ class BackstagePassesUpdater implements ItemUpdater {
 }
 
 class CommonItemUpdater implements ItemUpdater {
-  public update(item: Item) {
+  public createItemUpdateFor(item: Item) {
     const adjustmentAmount = isPassedSellIn(item) ? -2 : -1;
     return {
       QualityAdjustmentAmount: adjustmentAmount,
@@ -112,7 +112,7 @@ class CommonItemUpdater implements ItemUpdater {
   }
 }
 
-const updaterForItem = (item: Item): ItemUpdater => {
+const updaterFor = (item: Item): ItemUpdater => {
   const updaters = new Map<string, ItemUpdater>();
   updaters.set(BackstagePasses, new BackstagePassesUpdater());
   updaters.set(AgedBrie, new AgedBrieUpdater());
@@ -125,6 +125,8 @@ const updaterForItem = (item: Item): ItemUpdater => {
   return updater;
 };
 
+const itemUpdateFor = (item: Item) => updaterFor(item).createItemUpdateFor(item);
+
 export class Program {
   constructor(private Items: Array<Item>) {
   }
@@ -136,8 +138,8 @@ export class Program {
 
   public UpdateQuality(): void {
     this.Items.forEach(item => {
-      const update = updaterForItem(item).update(item);
-      applyUpdateTo(item, update);
+      const itemUpdate = itemUpdateFor(item);
+      applyUpdateTo(item, itemUpdate);
     });
   }
 }
