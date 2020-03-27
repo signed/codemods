@@ -47,13 +47,17 @@ export class Program {
   }
 
   public UpdateQuality(): void {
-    this.Items.forEach(this.update);
+    this.Items.forEach(Program.update);
   }
 
-  private update(item: Item) {
-    if (item.Name != AgedBrie && item.Name != BackstagePasses) {
+  private static update(item: Item) {
+    const isBackstagePasses = item.Name == BackstagePasses;
+    const isAgedBrie = item.Name == AgedBrie;
+    const isSulfurasHand = item.Name == SulfurasHand;
+
+    if (!isAgedBrie && !isBackstagePasses) {
       if (item.Quality > 0) {
-        if (item.Name != SulfurasHand) {
+        if (!isSulfurasHand) {
           item.Quality = item.Quality - 1;
         }
       }
@@ -61,7 +65,7 @@ export class Program {
       if (item.Quality < MaximumItemQuality) {
         item.Quality = item.Quality + 1;
 
-        if (item.Name == BackstagePasses) {
+        if (isBackstagePasses) {
           if (item.SellIn < 11) {
             if (item.Quality < MaximumItemQuality) {
               item.Quality = item.Quality + 1;
@@ -78,10 +82,10 @@ export class Program {
     }
 
     if (item.SellIn <= 0) {
-      if (item.Name != AgedBrie) {
-        if (item.Name != BackstagePasses) {
+      if (!isAgedBrie) {
+        if (!isBackstagePasses) {
           if (item.Quality > 0) {
-            if (item.Name != SulfurasHand) {
+            if (!isSulfurasHand) {
               item.Quality = item.Quality - 1;
             }
           }
@@ -94,7 +98,7 @@ export class Program {
         }
       }
     }
-    if (item.Name != SulfurasHand) {
+    if (!isSulfurasHand) {
       item.SellIn = item.SellIn - 1;
     }
   }
