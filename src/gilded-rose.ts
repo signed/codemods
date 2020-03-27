@@ -47,16 +47,13 @@ class SulfurasUpdater implements ItemUpdater {
   }
 }
 
+const isPassedSellIn = (item: Item) => item.SellIn <= 0;
+
 class AgedBrieUpdater implements ItemUpdater {
   public update(item: Item) {
-    if (item.Quality < MaximumItemQuality) {
-      item.Quality = item.Quality + 1;
-    }
-    if (item.SellIn <= 0) {
-      if (item.Quality < MaximumItemQuality) {
-        item.Quality = item.Quality + 1;
-      }
-    }
+    const adjustmentAmount = isPassedSellIn(item) ? 2 : 1;
+    const adjustedQuality = item.Quality + adjustmentAmount;
+    item.Quality = Math.min(MaximumItemQuality, adjustedQuality);
     item.SellIn = item.SellIn - 1;
   }
 }
@@ -78,7 +75,7 @@ class BackstagePassesUpdater implements ItemUpdater {
       }
     }
 
-    if (item.SellIn <= 0) {
+    if (isPassedSellIn(item)) {
       item.Quality = item.Quality - item.Quality;
     }
     item.SellIn = item.SellIn - 1;
@@ -91,7 +88,7 @@ class CommonItemUpdater implements ItemUpdater {
       item.Quality = item.Quality - 1;
     }
 
-    if (item.SellIn <= 0) {
+    if (isPassedSellIn(item)) {
       if (item.Quality > 0) {
         item.Quality = item.Quality - 1;
       }
