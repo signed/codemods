@@ -57,6 +57,30 @@ class AgedBrieUpdater {
   }
 }
 
+class BackstagePassesUpdater {
+  public update(item: Item) {
+    if (item.Quality < MaximumItemQuality) {
+      item.Quality = item.Quality + 1;
+
+      if (item.SellIn < 11) {
+        if (item.Quality < MaximumItemQuality) {
+          item.Quality = item.Quality + 1;
+        }
+      }
+      if (item.SellIn < 6) {
+        if (item.Quality < MaximumItemQuality) {
+          item.Quality = item.Quality + 1;
+        }
+      }
+    }
+
+    if (item.SellIn <= 0) {
+      item.Quality = item.Quality - item.Quality;
+    }
+    item.SellIn = item.SellIn - 1;
+  }
+}
+
 export class Program {
   constructor(private Items: Array<Item>) {
   }
@@ -76,43 +100,23 @@ export class Program {
         new AgedBrieUpdater().update(item);
         return;
       }
+
+      if (item.Name == BackstagePasses) {
+        new BackstagePassesUpdater().update(item);
+        return;
+      }
       Program.update(item);
     });
   }
 
   private static update(item: Item) {
-    const isBackstagePasses = item.Name == BackstagePasses;
-    if (!isBackstagePasses) {
-      if (item.Quality > 0) {
-        item.Quality = item.Quality - 1;
-      }
-    } else {
-      if (item.Quality < MaximumItemQuality) {
-        item.Quality = item.Quality + 1;
-
-        if (isBackstagePasses) {
-          if (item.SellIn < 11) {
-            if (item.Quality < MaximumItemQuality) {
-              item.Quality = item.Quality + 1;
-            }
-          }
-
-          if (item.SellIn < 6) {
-            if (item.Quality < MaximumItemQuality) {
-              item.Quality = item.Quality + 1;
-            }
-          }
-        }
-      }
+    if (item.Quality > 0) {
+      item.Quality = item.Quality - 1;
     }
 
     if (item.SellIn <= 0) {
-      if (!isBackstagePasses) {
-        if (item.Quality > 0) {
-          item.Quality = item.Quality - 1;
-        }
-      } else {
-        item.Quality = item.Quality - item.Quality;
+      if (item.Quality > 0) {
+        item.Quality = item.Quality - 1;
       }
     }
     item.SellIn = item.SellIn - 1;
