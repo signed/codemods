@@ -16,7 +16,7 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
   root.find(j.ImportDeclaration).forEach(importDeclaration => {
     j(importDeclaration).find(j.ImportDefaultSpecifier).forEach((defaultImport) => {
       const importString = extractImportString(importDeclaration.node);
-      let exportName = exportNameResolver({ path: file.path, importString });
+      let exportName = exportNameResolver({ path: file.path, importString }, api);
       let localNameIdentifier: Identifier | null = null;
       let localName = defaultImport.value.local?.name;
       if ( localName !== undefined && localName !== exportName) {
