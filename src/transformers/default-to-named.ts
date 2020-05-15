@@ -1,7 +1,8 @@
+import * as K from 'ast-types/gen/kinds';
 import { camelCase, pascalCase } from 'change-case';
+import { existsSync, readFileSync } from 'fs';
 import { API, ASTPath, ExportDefaultDeclaration } from 'jscodeshift/src/core';
 import { basename, dirname, extname, resolve } from 'path';
-import { readFileSync, existsSync } from 'fs';
 
 export type ExportName = string;
 export type Importer = { path: string, importString: string };
@@ -29,7 +30,14 @@ export const defaultExportNameResolver: ExportNameResolver = (importer: Importer
   if (defaultExport === undefined) {
     return 'StandInExportName';
   }
-  return exportNameFor(defaultExport, pathToImportedFile);
+  const exportName = exportNameFor(defaultExport, pathToImportedFile);
+  const declaration = defaultExport.value.declaration;
+  if(isDeclarationKind(declaration) && isMaybeAnonymousDeclarationKind(declaration)){
+    if (declaration.id !== null) {
+      return declaration.id.name;
+    }
+  }
+  return exportName;
 };
 
 export const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string): ExportName => {
@@ -42,4 +50,15 @@ export const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, 
     default:
       return pascalCase(filename);
   }
+};
+
+type MaybeAnonymousDefaultExportDeclarations = K.FunctionDeclarationKind | K.ClassDeclarationKind
+
+export const isDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.DeclarationKind => {
+  const expressionTypes = ['TSInterfaceDeclaration'];
+  return expressionTypes.includes(toCheck.type) || isMaybeAnonymousDeclarationKind(toCheck);
+};
+
+export const isMaybeAnonymousDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is MaybeAnonymousDefaultExportDeclarations => {
+  return ['FunctionDeclaration', 'ClassDeclaration'].includes(toCheck.type);
 };

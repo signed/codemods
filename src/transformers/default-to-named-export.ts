@@ -1,9 +1,7 @@
 import * as K from 'ast-types/gen/kinds';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
-import { exportNameFor } from './default-to-named';
+import { exportNameFor, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named';
 import { DoNotTransform } from './jscodeshift-constants';
-
-type MaybeAnonymousDefaultExportDeclarations = K.FunctionDeclarationKind | K.ClassDeclarationKind
 
 export const parser: string = 'ts';
 
@@ -62,11 +60,3 @@ const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toChec
   return expressionTypes.includes(toCheck.type);
 };
 
-const isDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.DeclarationKind => {
-  const expressionTypes = ['TSInterfaceDeclaration'];
-  return expressionTypes.includes(toCheck.type) || isMaybeAnonymousDeclarationKind(toCheck);
-};
-
-const isMaybeAnonymousDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is MaybeAnonymousDefaultExportDeclarations => {
-  return ['FunctionDeclaration', 'ClassDeclaration'].includes(toCheck.type);
-};
