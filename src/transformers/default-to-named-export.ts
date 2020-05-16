@@ -23,7 +23,39 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
 
   const defaultExport: ASTPath<ExportDefaultDeclaration> = defaultExports.paths()[0];
   const exportName = exportNameFor(defaultExport, file.path);
-  replaceWithNamedExport(defaultExport, exportName, j);
+  const declaration = defaultExport.value.declaration;
+  if (isIdentifierKind(declaration)) {
+    const identifiers = root.find(j.VariableDeclarator, {
+      id: {
+        type: 'Identifier',
+        name: declaration.name
+      }
+    });
+    if (identifiers.size() !== 1) {
+      throw new Error('There is more than one place the exported default identifier is declared, have to take care of this')
+    }
+    const path = identifiers.paths()[0];
+    if( !path.scope.isGlobal ) {
+      throw new Error('Not global, have a look at the code')
+    }
+    const banana = j(path);
+    const exportNamedDeclarationCollection = banana.closest(j.ExportNamedDeclaration);
+    const isExported = exportNamedDeclarationCollection.size() === 1
+    if (!isExported) {
+      const declaration = banana.closest(j.VariableDeclaration);
+      if (declaration.size() !== 1) {
+        throw new Error('have a look at the code')
+      }
+      const path1 = declaration.paths()[0];
+      const updated = j.exportNamedDeclaration(path1.value);
+      declaration.replaceWith(updated)
+      console.log('not exported')
+    }
+
+    j(defaultExport).replaceWith([]);
+  } else {
+    replaceWithNamedExport(defaultExport, exportName, j);
+  }
 
   const firstNodeAfterTransformation = getFirstNode();
   if (originalFirstNode !== firstNodeAfterTransformation) {
@@ -37,10 +69,6 @@ export default transform;
 const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, exportName: string, j: JSCodeshift) => {
   const declaration = defaultExport.value.declaration;
   if (isExpressionKind(declaration)) {
-    if(declaration.type === 'Identifier') {
-      j(defaultExport).replaceWith([])
-      return
-    }
     const replacementDeclaration = j.variableDeclaration('const', [
       j.variableDeclarator(j.identifier(exportName), declaration)
     ]);
@@ -57,6 +85,10 @@ const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>
     return;
   }
   console.log('[skip] ' + defaultExport.value.declaration.type);
+};
+
+const isIdentifierKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.IdentifierKind => {
+  return toCheck.type === 'Identifier';
 };
 
 const isExpressionKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.ExpressionKind => {

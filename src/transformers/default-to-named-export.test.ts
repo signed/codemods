@@ -85,5 +85,11 @@ export default aFunction`
       const expected = `export const aFunction = () => {}`
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
+    test('not exported function', () => {
+      const input = `const aFunction = () => {}
+export default aFunction`
+      const expected = `export const aFunction = () => {};`
+      expect(transformedDefaultExport(input)).toEqual(expected);
+    });
   });
 });
