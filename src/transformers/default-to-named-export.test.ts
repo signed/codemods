@@ -78,4 +78,12 @@ export const ExportName = call();`;
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
   });
+  describe('identifiers', () => {
+    test('already exported function', () => {
+      const input = `export const aFunction = () => {}
+export default aFunction`
+      const expected = `export const aFunction = () => {}`
+      expect(transformedDefaultExport(input)).toEqual(expected);
+    });
+  });
 });
