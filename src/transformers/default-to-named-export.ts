@@ -20,7 +20,7 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
   }
 
   preserveCommentAtStartOfFile(root, j, () => {
-    replaceWithNamedExport2(root, j, file);
+    replaceWithNamedExport(root, j, file);
   });
 
   return root.toSource({ quote: 'single' });
@@ -28,15 +28,31 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
 export default transform;
 
 
-export const replaceWithNamedExport2 = (root: Collection<any>, j: JSCodeshift, file: FileInfo) => {
+export const replaceWithNamedExport = (root: Collection<any>, j: JSCodeshift, file: FileInfo) => {
   const defaultExport: ASTPath<ExportDefaultDeclaration> = root.find(j.ExportDefaultDeclaration).paths()[0];
   const exportName = exportNameFor(defaultExport, file.path);
   const declaration = defaultExport.value.declaration;
   if (isIdentifierKind(declaration)) {
     removeAliasDefaultExport(root, j, declaration, defaultExport);
-  } else {
-    replaceWithNamedExport(defaultExport, exportName, j);
+    return;
   }
+  if (isExpressionKind(declaration)) {
+    const replacementDeclaration = j.variableDeclaration('const', [
+      j.variableDeclarator(j.identifier(exportName), declaration)
+    ]);
+    j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
+    return;
+  }
+  if (isDeclarationKind(declaration)) {
+    if (isMaybeAnonymousDeclarationKind(declaration)) {
+      if (declaration.id === null) {
+        declaration.id = j.identifier(exportName);
+      }
+    }
+    j(defaultExport).replaceWith(j.exportNamedDeclaration(declaration));
+    return;
+  }
+  console.log('[skip] ' + defaultExport.value.declaration.type);
 };
 
 const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declaration: K.IdentifierKind, defaultExport: ASTPath<ExportDefaultDeclaration>) => {
@@ -67,27 +83,6 @@ const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declara
   }
 
   j(defaultExport).replaceWith([]);
-};
-
-const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, exportName: string, j: JSCodeshift) => {
-  const declaration = defaultExport.value.declaration;
-  if (isExpressionKind(declaration)) {
-    const replacementDeclaration = j.variableDeclaration('const', [
-      j.variableDeclarator(j.identifier(exportName), declaration)
-    ]);
-    j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
-    return;
-  }
-  if (isDeclarationKind(declaration)) {
-    if (isMaybeAnonymousDeclarationKind(declaration)) {
-      if (declaration.id === null) {
-        declaration.id = j.identifier(exportName);
-      }
-    }
-    j(defaultExport).replaceWith(j.exportNamedDeclaration(declaration));
-    return;
-  }
-  console.log('[skip] ' + defaultExport.value.declaration.type);
 };
 
 const isIdentifierKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.IdentifierKind => {
