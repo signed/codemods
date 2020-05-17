@@ -3,6 +3,7 @@ import { camelCase, pascalCase } from 'change-case';
 import { existsSync, readFileSync } from 'fs';
 import { API, ASTPath, ExportDefaultDeclaration, NewExpression } from 'jscodeshift/src/core';
 import { basename, dirname, extname, resolve } from 'path';
+import { replaceWithNamedExport } from './default-to-named-export';
 
 export type ExportName = string;
 export type Importer = { path: string, importString: string };
@@ -24,20 +25,8 @@ export const defaultExportNameResolver: ExportNameResolver = (importer: Importer
   const importSource = readFileSync(pathToImportedFile, { encoding: 'utf8' });
   const j = api.jscodeshift;
   const root = j(importSource);
-  const defaultExports = root.find(j.ExportDefaultDeclaration);
-  const defaultExport = defaultExports.paths()[0];
-
-  if (defaultExport === undefined) {
-    return 'StandInExportName';
-  }
-  const exportName = exportNameFor(defaultExport, pathToImportedFile);
-  const declaration = defaultExport.value.declaration;
-  if (isDeclarationKind(declaration) && isMaybeAnonymousDeclarationKind(declaration)) {
-    if (declaration.id !== null) {
-      return declaration.id.name;
-    }
-  }
-  return exportName;
+  const result = replaceWithNamedExport(root, j, { path: importer.path, source: importSource });
+  return result.identifier;
 };
 
 export const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string): ExportName => {
