@@ -1,7 +1,9 @@
 import * as K from 'ast-types/gen/kinds';
+import { camelCase, pascalCase } from 'change-case';
 import { Collection } from 'jscodeshift/src/Collection';
-import { API, ASTPath, ExportDefaultDeclaration, FileInfo, Identifier, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
-import { exportNameFor, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named';
+import { API, ASTPath, ExportDefaultDeclaration, FileInfo, Identifier, JSCodeshift, NewExpression, Options, StringLiteral } from 'jscodeshift/src/core';
+import { basename, extname } from 'path';
+import { ExportName, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named';
 import { DoNotTransform } from './jscodeshift-constants';
 import { preserveCommentAtStartOfFile } from './shared';
 
@@ -46,17 +48,20 @@ export const replaceWithNamedExport = (root: Collection<any>, j: JSCodeshift, fi
     };
   }
   if (isDeclarationKind(declaration)) {
+    let identifier = exportName;
     if (isMaybeAnonymousDeclarationKind(declaration)) {
       if (declaration.id === null) {
         declaration.id = j.identifier(exportName);
+      } else {
+        identifier = declaration.id.name;
       }
     }
     j(defaultExport).replaceWith(j.exportNamedDeclaration(declaration));
     return {
-      identifier: exportName
+      identifier
     };
   }
-  throw new Error('[skip] ' + defaultExport.value.declaration.type)
+  throw new Error('[skip] ' + defaultExport.value.declaration.type);
 };
 
 const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declaration: K.IdentifierKind, defaultExport: ASTPath<ExportDefaultDeclaration>): NamedExport => {
@@ -89,6 +94,25 @@ const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declara
   j(defaultExport).replaceWith([]);
   return {
     identifier: declaration.name
+  };
+};
+
+export const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string): ExportName => {
+  const type = defaultExport.value.declaration.type;
+  const filename = basename(path, extname(path));
+  switch (type) {
+    case 'FunctionDeclaration':
+    case 'ArrowFunctionExpression':
+      return camelCase(filename);
+    case 'NewExpression':
+      const newExpression = defaultExport.value.declaration as NewExpression;
+      const callee = newExpression.callee;
+      if (isIdentifierKind(callee)) {
+        return camelCase(callee.name + 'Singleton');
+      }
+      throw new Error('NewExpression of type ' + callee.type);
+    default:
+      return pascalCase(filename);
   }
 };
 

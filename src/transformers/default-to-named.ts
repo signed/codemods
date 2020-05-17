@@ -1,8 +1,7 @@
 import * as K from 'ast-types/gen/kinds';
-import { camelCase, pascalCase } from 'change-case';
 import { existsSync, readFileSync } from 'fs';
-import { API, ASTPath, ExportDefaultDeclaration, NewExpression } from 'jscodeshift/src/core';
-import { basename, dirname, extname, resolve } from 'path';
+import { API } from 'jscodeshift/src/core';
+import { dirname, resolve } from 'path';
 import { replaceWithNamedExport } from './default-to-named-export';
 
 export type ExportName = string;
@@ -22,27 +21,8 @@ export const defaultExportNameResolver: ExportNameResolver = (importer: Importer
     throw new Error(`:( ${pathToImportedFile}`);
   }
   const root = api.jscodeshift(readFileSync(pathToImportedFile, { encoding: 'utf8' }));
-  const result = replaceWithNamedExport(root, api.jscodeshift, { path: importer.path, source: readFileSync(pathToImportedFile, { encoding: 'utf8' }) });
+  const result = replaceWithNamedExport(root, api.jscodeshift, { path: pathToImportedFile, source: readFileSync(pathToImportedFile, { encoding: 'utf8' }) });
   return result.identifier;
-};
-
-export const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string): ExportName => {
-  const type = defaultExport.value.declaration.type;
-  const filename = basename(path, extname(path));
-  switch (type) {
-    case 'FunctionDeclaration':
-    case 'ArrowFunctionExpression':
-      return camelCase(filename);
-    case 'NewExpression':
-      const newExpression = defaultExport.value.declaration as NewExpression;
-      const callee = newExpression.callee;
-      if (isIdentifierKind(callee)) {
-        return camelCase(callee.name + 'Singleton');
-      }
-      throw new Error('NewExpression of type ' + callee.type);
-    default:
-      return pascalCase(filename);
-  }
 };
 
 type MaybeAnonymousDefaultExportDeclarations = K.FunctionDeclarationKind | K.ClassDeclarationKind
