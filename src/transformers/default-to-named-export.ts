@@ -1,5 +1,6 @@
 import * as K from 'ast-types/gen/kinds';
-import { API, ASTPath, ExportDefaultDeclaration, FileInfo, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
+import { Collection } from 'jscodeshift/src/Collection';
+import { API, ASTPath, ExportDefaultDeclaration, FileInfo, Identifier, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
 import { exportNameFor, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named';
 import { DoNotTransform } from './jscodeshift-constants';
 
@@ -25,33 +26,7 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
   const exportName = exportNameFor(defaultExport, file.path);
   const declaration = defaultExport.value.declaration;
   if (isIdentifierKind(declaration)) {
-    const identifiers = root.find(j.VariableDeclarator, {
-      id: {
-        type: 'Identifier',
-        name: declaration.name
-      }
-    });
-    if (identifiers.size() !== 1) {
-      throw new Error('There is more than one place the exported default identifier is declared, have to take care of this')
-    }
-    const path = identifiers.paths()[0];
-    if( !path.scope.isGlobal ) {
-      throw new Error('Not global, have a look at the code')
-    }
-    const banana = j(path);
-    const exportNamedDeclarationCollection = banana.closest(j.ExportNamedDeclaration);
-    const isExported = exportNamedDeclarationCollection.size() === 1
-    if (!isExported) {
-      const declaration = banana.closest(j.VariableDeclaration);
-      if (declaration.size() !== 1) {
-        throw new Error('have a look at the code')
-      }
-      const path1 = declaration.paths()[0];
-      const updated = j.exportNamedDeclaration(path1.value);
-      declaration.replaceWith(updated)
-    }
-
-    j(defaultExport).replaceWith([]);
+    removeAliasDefaultExport(root, j, declaration, defaultExport);
   } else {
     replaceWithNamedExport(defaultExport, exportName, j);
   }
@@ -64,6 +39,36 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
   return root.toSource({ quote: 'single' });
 };
 export default transform;
+
+const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declaration: K.IdentifierKind, defaultExport: ASTPath<ExportDefaultDeclaration>) => {
+  const identifiers = root.find(j.VariableDeclarator, {
+    id: {
+      type: 'Identifier',
+      name: declaration.name
+    }
+  });
+  if (identifiers.size() !== 1) {
+    throw new Error('There is more than one place the exported default identifier is declared, have to take care of this')
+  }
+  const path = identifiers.paths()[0];
+  if (!path.scope.isGlobal) {
+    throw new Error('Not global, have a look at the code')
+  }
+  const banana = j(path);
+  const exportNamedDeclarationCollection = banana.closest(j.ExportNamedDeclaration);
+  const isExported = exportNamedDeclarationCollection.size() === 1;
+  if (!isExported) {
+    const declaration = banana.closest(j.VariableDeclaration);
+    if (declaration.size() !== 1) {
+      throw new Error('have a look at the code')
+    }
+    const path1 = declaration.paths()[0];
+    const updated = j.exportNamedDeclaration(path1.value);
+    declaration.replaceWith(updated);
+  }
+
+  j(defaultExport).replaceWith([]);
+};
 
 const replaceWithNamedExport = (defaultExport: ASTPath<ExportDefaultDeclaration>, exportName: string, j: JSCodeshift) => {
   const declaration = defaultExport.value.declaration;
