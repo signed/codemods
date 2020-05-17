@@ -27,21 +27,23 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
 };
 export default transform;
 
+type NamedExport = { identifier: string };
 
-export const replaceWithNamedExport = (root: Collection<any>, j: JSCodeshift, file: FileInfo) => {
+export const replaceWithNamedExport = (root: Collection<any>, j: JSCodeshift, file: FileInfo): NamedExport => {
   const defaultExport: ASTPath<ExportDefaultDeclaration> = root.find(j.ExportDefaultDeclaration).paths()[0];
   const exportName = exportNameFor(defaultExport, file.path);
   const declaration = defaultExport.value.declaration;
   if (isIdentifierKind(declaration)) {
-    removeAliasDefaultExport(root, j, declaration, defaultExport);
-    return;
+    return removeAliasDefaultExport(root, j, declaration, defaultExport);
   }
   if (isExpressionKind(declaration)) {
     const replacementDeclaration = j.variableDeclaration('const', [
       j.variableDeclarator(j.identifier(exportName), declaration)
     ]);
     j(defaultExport).replaceWith(j.exportDeclaration(false, replacementDeclaration));
-    return;
+    return {
+      identifier: exportName
+    };
   }
   if (isDeclarationKind(declaration)) {
     if (isMaybeAnonymousDeclarationKind(declaration)) {
@@ -50,12 +52,14 @@ export const replaceWithNamedExport = (root: Collection<any>, j: JSCodeshift, fi
       }
     }
     j(defaultExport).replaceWith(j.exportNamedDeclaration(declaration));
-    return;
+    return {
+      identifier: exportName
+    };
   }
-  console.log('[skip] ' + defaultExport.value.declaration.type);
+  throw new Error('[skip] ' + defaultExport.value.declaration.type)
 };
 
-const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declaration: K.IdentifierKind, defaultExport: ASTPath<ExportDefaultDeclaration>) => {
+const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declaration: K.IdentifierKind, defaultExport: ASTPath<ExportDefaultDeclaration>): NamedExport => {
   const identifiers = root.find(j.VariableDeclarator, {
     id: {
       type: 'Identifier',
@@ -83,6 +87,9 @@ const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declara
   }
 
   j(defaultExport).replaceWith([]);
+  return {
+    identifier: declaration.name
+  }
 };
 
 const isIdentifierKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is K.IdentifierKind => {
