@@ -21,11 +21,8 @@ export const defaultExportNameResolver: ExportNameResolver = (importer: Importer
   if (!existsSync(pathToImportedFile)) {
     throw new Error(`:( ${pathToImportedFile}`);
   }
-
-  const importSource = readFileSync(pathToImportedFile, { encoding: 'utf8' });
-  const j = api.jscodeshift;
-  const root = j(importSource);
-  const result = replaceWithNamedExport(root, j, { path: importer.path, source: importSource });
+  const root = api.jscodeshift(readFileSync(pathToImportedFile, { encoding: 'utf8' }));
+  const result = replaceWithNamedExport(root, api.jscodeshift, { path: importer.path, source: readFileSync(pathToImportedFile, { encoding: 'utf8' }) });
   return result.identifier;
 };
 
