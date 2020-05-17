@@ -1,9 +1,9 @@
 import * as K from 'ast-types/gen/kinds';
 import { Collection } from 'jscodeshift/src/Collection';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, Identifier, JSCodeshift, Options, StringLiteral } from 'jscodeshift/src/core';
-import { preserveCommentAtStartOfFile } from './shared';
 import { exportNameFor, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named';
 import { DoNotTransform } from './jscodeshift-constants';
+import { preserveCommentAtStartOfFile } from './shared';
 
 export const parser: string = 'ts';
 
@@ -15,25 +15,29 @@ export const transform = (file: FileInfo, api: API, _options: Options) => {
   const j = api.jscodeshift;
   const root = j(file.source);
 
-  const defaultExports = root.find(j.ExportDefaultDeclaration);
-  if (defaultExports.size() === 0) {
+  if (root.find(j.ExportDefaultDeclaration).size() === 0) {
     return DoNotTransform;
   }
 
   preserveCommentAtStartOfFile(root, j, () => {
-    const defaultExport: ASTPath<ExportDefaultDeclaration> = defaultExports.paths()[0];
-    const exportName = exportNameFor(defaultExport, file.path);
-    const declaration = defaultExport.value.declaration;
-    if (isIdentifierKind(declaration)) {
-      removeAliasDefaultExport(root, j, declaration, defaultExport);
-    } else {
-      replaceWithNamedExport(defaultExport, exportName, j);
-    }
+    replaceWithNamedExport2(root, j, file);
   });
 
   return root.toSource({ quote: 'single' });
 };
 export default transform;
+
+
+export const replaceWithNamedExport2 = (root: Collection<any>, j: JSCodeshift, file: FileInfo) => {
+  const defaultExport: ASTPath<ExportDefaultDeclaration> = root.find(j.ExportDefaultDeclaration).paths()[0];
+  const exportName = exportNameFor(defaultExport, file.path);
+  const declaration = defaultExport.value.declaration;
+  if (isIdentifierKind(declaration)) {
+    removeAliasDefaultExport(root, j, declaration, defaultExport);
+  } else {
+    replaceWithNamedExport(defaultExport, exportName, j);
+  }
+};
 
 const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declaration: K.IdentifierKind, defaultExport: ASTPath<ExportDefaultDeclaration>) => {
   const identifiers = root.find(j.VariableDeclarator, {
