@@ -1,7 +1,7 @@
 import * as K from 'ast-types/gen/kinds';
 import { camelCase, pascalCase } from 'change-case';
 import { existsSync, readFileSync } from 'fs';
-import { API, ASTPath, ExportDefaultDeclaration } from 'jscodeshift/src/core';
+import { API, ASTPath, ExportDefaultDeclaration, NewExpression } from 'jscodeshift/src/core';
 import { basename, dirname, extname, resolve } from 'path';
 
 export type ExportName = string;
@@ -32,7 +32,7 @@ export const defaultExportNameResolver: ExportNameResolver = (importer: Importer
   }
   const exportName = exportNameFor(defaultExport, pathToImportedFile);
   const declaration = defaultExport.value.declaration;
-  if(isDeclarationKind(declaration) && isMaybeAnonymousDeclarationKind(declaration)){
+  if (isDeclarationKind(declaration) && isMaybeAnonymousDeclarationKind(declaration)) {
     if (declaration.id !== null) {
       return declaration.id.name;
     }
@@ -47,6 +47,13 @@ export const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, 
     case 'FunctionDeclaration':
     case 'ArrowFunctionExpression':
       return camelCase(filename);
+    case 'NewExpression':
+      const newExpression = defaultExport.value.declaration as NewExpression;
+      const callee = newExpression.callee;
+      if (isIdentifierKind(callee)) {
+        return camelCase(callee.name + 'Singleton');
+      }
+      throw new Error('NewExpression of type ' + callee.type);
     default:
       return pascalCase(filename);
   }
@@ -61,4 +68,8 @@ export const isDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind)
 
 export const isMaybeAnonymousDeclarationKind = (toCheck: K.DeclarationKind | K.ExpressionKind): toCheck is MaybeAnonymousDefaultExportDeclarations => {
   return ['FunctionDeclaration', 'ClassDeclaration'].includes(toCheck.type);
+};
+
+export const isIdentifierKind = (toCheck: K.ExpressionKind): toCheck is K.IdentifierKind => {
+  return toCheck.type === 'Identifier';
 };

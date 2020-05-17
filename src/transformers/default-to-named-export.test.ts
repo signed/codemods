@@ -49,6 +49,14 @@ export const ExportName = call();`;
       const expected = `export const exportName = () => {};`;
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
+    test('do not produce an export with an identifier that is already exported', () => {
+      path = 'the-class.ts'
+      const input = `export class TheClass {}
+export default new TheClass()`;
+      const expected = `export class TheClass {}
+export const theClassSingleton = new TheClass();`;
+      expect(transformedDefaultExport(input)).toEqual(expected);
+    });
   });
 
   describe('declarations', () => {
