@@ -6,10 +6,14 @@ export const preserveCommentAtStartOfFile = (root: Collection<any>, j: JSCodeshi
   const originalFirstNode = getFirstNode();
   const comments = originalFirstNode.comments;
 
-  execute()
+  execute();
 
   const firstNodeAfterTransformation = getFirstNode();
   if (originalFirstNode !== firstNodeAfterTransformation) {
     firstNodeAfterTransformation.comments = comments;
   }
+};
+
+export const isLibraryImport = (importString: string): boolean => {
+  return !importString.startsWith('.')
 };

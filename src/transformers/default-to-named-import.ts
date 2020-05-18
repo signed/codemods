@@ -1,6 +1,7 @@
 import * as K from 'ast-types/gen/kinds';
 import * as N from 'ast-types/gen/nodes';
 import { API, FileInfo, Identifier, ImportDeclaration, Options, StringLiteral } from 'jscodeshift/src/core';
+import { isLibraryImport } from './shared';
 import { defaultExportNameResolver, ExportNameResolver } from './default-to-named';
 import { DoNotTransform } from './jscodeshift-constants';
 
@@ -16,9 +17,12 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
   root.find(j.ImportDeclaration).forEach(importDeclaration => {
     j(importDeclaration).find(j.ImportDefaultSpecifier).forEach((defaultImport) => {
       const importString = extractImportString(importDeclaration.node);
-      let exportName = exportNameResolver({ path: file.path, importString }, api);
+      if (isLibraryImport(importString)) {
+        return;
+      }
+      const exportName = exportNameResolver({ path: file.path, importString }, api);
+      const localName = defaultImport.value.local?.name;
       let localNameIdentifier: Identifier | null = null;
-      let localName = defaultImport.value.local?.name;
       if ( localName !== undefined && localName !== exportName) {
         localNameIdentifier = j.identifier(localName);
       }
