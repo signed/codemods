@@ -1,8 +1,8 @@
 import * as K from 'ast-types/gen/kinds';
-import { existsSync, readFileSync } from 'fs';
 import { API } from 'jscodeshift/src/core';
 import { dirname, resolve } from 'path';
 import { replaceWithNamedExport } from './default-to-named-export';
+import { DefaultFilesystem, Filesystem } from './filesystem';
 
 export type ExportName = string;
 export type Importer = { path: string, importString: string };
@@ -10,18 +10,18 @@ export type Importer = { path: string, importString: string };
 /*
  if resolving imports becomes tedious have a look at https://github.com/dividab/tsconfig-paths
  */
-export type ExportNameResolver = (importer: Importer, api: API) => ExportName
+export type ExportNameResolver = (importer: Importer, api: API, filesystem?: Filesystem) => ExportName
 
-export const defaultExportNameResolver: ExportNameResolver = (importer: Importer, api: API): ExportName => {
+export const defaultExportNameResolver: ExportNameResolver = (importer: Importer, api: API, filesystem: Filesystem = new DefaultFilesystem()): ExportName => {
   const currentFileDirectory = dirname(resolve(importer.path));
   const absoluteImportTarget = resolve(currentFileDirectory, importer.importString);
   const pathToImportedFile = absoluteImportTarget + '.ts';
 
-  if (!existsSync(pathToImportedFile)) {
+  if (!filesystem.exists(pathToImportedFile)) {
     throw new Error(`:( ${pathToImportedFile}`);
   }
-  const root = api.jscodeshift(readFileSync(pathToImportedFile, { encoding: 'utf8' }));
-  const result = replaceWithNamedExport(root, api.jscodeshift, { path: pathToImportedFile, source: readFileSync(pathToImportedFile, { encoding: 'utf8' }) });
+  const file = { path: pathToImportedFile, source: filesystem.readFileAsString(pathToImportedFile) };
+  const result = replaceWithNamedExport(api.jscodeshift(file.source), api.jscodeshift, file);
   return result.identifier;
 };
 
