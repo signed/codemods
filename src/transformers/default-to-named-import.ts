@@ -1,6 +1,6 @@
 import * as K from 'ast-types/gen/kinds';
 import * as N from 'ast-types/gen/nodes';
-import { API, FileInfo, Identifier, ImportDeclaration, Options, StringLiteral } from 'jscodeshift/src/core';
+import { API, ASTPath, FileInfo, Identifier, ImportDeclaration, Options, StringLiteral } from 'jscodeshift/src/core';
 import { defaultExportNameResolver, ExportNameResolver } from './default-to-named';
 import { DoNotTransform } from './jscodeshift-constants';
 import { isImportToSourceFileInProject } from './shared';
@@ -12,10 +12,28 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
   if (file.path.endsWith('.d.ts')) {
     return DoNotTransform;
   }
-  const j = api.jscodeshift;
-  const root = j(file.source);
+  const root = api.j(file.source);
 
-  root.find(j.ImportDeclaration, {
+  const flubber = (renamedDefaultImport: ASTPath<N.ImportDeclaration>, importSpecifier: ASTPath<N.ImportSpecifier> | ASTPath<N.ImportDefaultSpecifier>) => {
+    const importString = extractImportString(renamedDefaultImport.node);
+    if (!isImportToSourceFileInProject(importString)) {
+      return;
+    }
+    const exportName = exportNameResolver({ path: file.path, importString }, api);
+    const localName = importSpecifier.value.local?.name;
+    let localNameIdentifier: Identifier | null = null;
+    if (localName !== undefined && localName !== exportName) {
+      localNameIdentifier = api.j.identifier(localName);
+    }
+    importSpecifier.replace(api.j.importSpecifier(api.j.identifier(exportName), localNameIdentifier));
+  };
+
+  root.find(api.j.ImportDeclaration).forEach(importDeclaration => {
+    api.j(importDeclaration).find(api.j.ImportDefaultSpecifier)
+      .forEach((defaultImport) => flubber(importDeclaration, defaultImport));
+  });
+
+  root.find(api.j.ImportDeclaration, {
     specifiers: [{
       type: 'ImportSpecifier',
       imported: {
@@ -24,35 +42,8 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
       }
     }]
   }).forEach(renamedDefaultImport => {
-    j(renamedDefaultImport).find(j.ImportSpecifier).forEach(importSpecifier => {
-      const importString = extractImportString(renamedDefaultImport.node);
-      if (!isImportToSourceFileInProject(importString)) {
-        return;
-      }
-      const exportName = exportNameResolver({ path: file.path, importString }, api);
-      const localName = importSpecifier.value.local?.name;
-      let localNameIdentifier: Identifier | null = null;
-      if (localName !== undefined && localName !== exportName) {
-        localNameIdentifier = j.identifier(localName);
-      }
-      importSpecifier.replace(j.importSpecifier(j.identifier(exportName), localNameIdentifier));
-    });
-  });
-
-  root.find(j.ImportDeclaration).forEach(importDeclaration => {
-    j(importDeclaration).find(j.ImportDefaultSpecifier).forEach((defaultImport) => {
-      const importString = extractImportString(importDeclaration.node);
-      if (!isImportToSourceFileInProject(importString)) {
-        return;
-      }
-      const exportName = exportNameResolver({ path: file.path, importString }, api);
-      const localName = defaultImport.value.local?.name;
-      let localNameIdentifier: Identifier | null = null;
-      if (localName !== undefined && localName !== exportName) {
-        localNameIdentifier = j.identifier(localName);
-      }
-      defaultImport.replace(j.importSpecifier(j.identifier(exportName), localNameIdentifier));
-    });
+    api.j(renamedDefaultImport).find(api.j.ImportSpecifier)
+      .forEach(importSpecifier => flubber(renamedDefaultImport, importSpecifier));
   });
   return root.toSource({ quote: 'single' });
 };
