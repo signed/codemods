@@ -24,10 +24,10 @@ describe('defaultExportNameResolver', () => {
     expect(() => defaultExportNameResolver(importer, apiForTypescript())).toThrow();
   });
 
-  test('broken test that needs to control the current working directory in production code', () => {
+  test('resolve import path and extract named export after transformation', () => {
     const filesystem = new InMemoryFilesystem();
-    const importer: Importer = { importString: './example', path: '/tmp/' };
-    filesystem.files.set('/example.ts', `export default 'constant'`);
+    const importer: Importer = { path: '/tmp/importer.ts', importString: './example' };
+    filesystem.files.set('/tmp/example.ts', `export default 'constant'`);
     expect(defaultExportNameResolver(importer, apiForTypescript(), filesystem)).toBe('Example')
   });
 });
