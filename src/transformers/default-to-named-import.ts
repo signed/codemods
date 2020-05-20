@@ -14,7 +14,7 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
   }
   const root = api.j(file.source);
 
-  const flubber = (renamedDefaultImport: ASTPath<N.ImportDeclaration>, importSpecifier: ASTPath<N.ImportSpecifier> | ASTPath<N.ImportDefaultSpecifier>) => {
+  const changeImportToAdjustForRemovedDefaultExport = (renamedDefaultImport: ASTPath<N.ImportDeclaration>, importSpecifier: ASTPath<N.ImportSpecifier> | ASTPath<N.ImportDefaultSpecifier>) => {
     const importString = extractImportString(renamedDefaultImport.node);
     if (!isImportToSourceFileInProject(importString)) {
       return;
@@ -30,20 +30,14 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
 
   root.find(api.j.ImportDeclaration).forEach(importDeclaration => {
     api.j(importDeclaration).find(api.j.ImportDefaultSpecifier)
-      .forEach((defaultImport) => flubber(importDeclaration, defaultImport));
-  });
-
-  root.find(api.j.ImportDeclaration, {
-    specifiers: [{
+      .forEach((importDefaultSpecifier) => changeImportToAdjustForRemovedDefaultExport(importDeclaration, importDefaultSpecifier));
+    api.j(importDeclaration).find(api.j.ImportSpecifier, {
       type: 'ImportSpecifier',
       imported: {
         type: 'Identifier',
         name: 'default'
       }
-    }]
-  }).forEach(renamedDefaultImport => {
-    api.j(renamedDefaultImport).find(api.j.ImportSpecifier)
-      .forEach(importSpecifier => flubber(renamedDefaultImport, importSpecifier));
+    }).forEach(importSpecifier => changeImportToAdjustForRemovedDefaultExport(importDeclaration, importSpecifier));
   });
   return root.toSource({ quote: 'single' });
 };
