@@ -30,4 +30,11 @@ describe('defaultExportNameResolver', () => {
     filesystem.files.set('/tmp/example.ts', `export default 'constant'`);
     expect(defaultExportNameResolver(importer, apiForTypescript(), filesystem)).toBe('Example')
   });
+
+  test('resolve index.ts imports', () => {
+    const filesystem = new InMemoryFilesystem();
+    const importer: Importer = { path: '/tmp/importer.ts', importString: './example' };
+    filesystem.files.set('/tmp/example/index.ts', `export default 'constant'`);
+    expect(defaultExportNameResolver(importer, apiForTypescript(), filesystem)).toBe('Example')
+  });
 });

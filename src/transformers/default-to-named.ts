@@ -16,11 +16,14 @@ export const defaultExportNameResolver: ExportNameResolver = (importer: Importer
   const currentFileDirectory = dirname(resolve(importer.path));
   const absoluteImportTarget = resolve(currentFileDirectory, importer.importString);
   const pathToImportedFile = absoluteImportTarget + '.ts';
+  const pathToImportedIndexFile = resolve(absoluteImportTarget, 'index.ts');
+  const candidates = [pathToImportedFile, pathToImportedIndexFile];
+  const foundFile = candidates.find(p => filesystem.exists(p));
 
-  if (!filesystem.exists(pathToImportedFile)) {
-    throw new Error(`:( ${pathToImportedFile}`);
+  if (foundFile === undefined) {
+    throw new Error(`:( ${candidates}`);
   }
-  const file = { path: pathToImportedFile, source: filesystem.readFileAsString(pathToImportedFile) };
+  const file = { path: foundFile, source: filesystem.readFileAsString(foundFile) };
   const result = replaceWithNamedExport(api.jscodeshift(file.source), api.jscodeshift, file);
   return result.identifier;
 };

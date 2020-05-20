@@ -2,7 +2,7 @@ import * as K from 'ast-types/gen/kinds';
 import { camelCase, pascalCase } from 'change-case';
 import { Collection } from 'jscodeshift/src/Collection';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, Identifier, JSCodeshift, NewExpression, Options, StringLiteral } from 'jscodeshift/src/core';
-import { basename, extname } from 'path';
+import { basename, extname, dirname } from 'path';
 import { ExportName, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named';
 import { DoNotTransform } from './jscodeshift-constants';
 import { preserveCommentAtStartOfFile } from './shared';
@@ -99,7 +99,10 @@ const removeAliasDefaultExport = (root: Collection<any>, j: JSCodeshift, declara
 
 export const exportNameFor = (defaultExport: ASTPath<ExportDefaultDeclaration>, path: string): ExportName => {
   const type = defaultExport.value.declaration.type;
-  const filename = basename(path, extname(path));
+  let filename = basename(path, extname(path));
+  if ('index' === filename) {
+    filename = basename(dirname(path));
+  }
   switch (type) {
     case 'FunctionDeclaration':
     case 'ArrowFunctionExpression':
