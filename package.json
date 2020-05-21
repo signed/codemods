@@ -2,10 +2,10 @@
   "name": "codemods",
   "private": true,
   "scripts": {
-    "start": "ts-node sample/consumer.ts",
+    "start": "ts-node sample/default-exports/consumer.ts",
     "transform": "yarn transform:default-imports && yarn transform:default-exports",
-    "transform:default-imports": "jscodeshift --extensions=ts --transform src/transformers/default-to-named-import.ts sample/",
-    "transform:default-exports": "jscodeshift --extensions=ts --transform src/transformers/default-to-named-export.ts sample/",
+    "transform:default-imports": "jscodeshift --extensions=ts --transform src/transformers/default-to-named-import.ts sample/default-exports",
+    "transform:default-exports": "jscodeshift --extensions=ts --transform src/transformers/default-to-named-export.ts sample/default-exports",
     "test": "jest"
   },
   "devDependencies": {
