@@ -3,6 +3,7 @@
     "target": "es5",
     "module": "commonjs",
     "strict": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true
   }
 }

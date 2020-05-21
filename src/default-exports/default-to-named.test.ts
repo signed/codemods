@@ -1,5 +1,5 @@
-import { Filesystem } from './filesystem';
-import { apiForTypescript } from '../utils';
+import { Filesystem } from '../shared/filesystem';
+import { apiForTypescript } from '../shared/utils';
 import { defaultExportNameResolver, Importer } from './default-to-named';
 
 class InMemoryFilesystem implements Filesystem {

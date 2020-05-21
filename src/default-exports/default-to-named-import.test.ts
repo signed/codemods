@@ -1,5 +1,5 @@
 import 'jest-extended';
-import { apiForTypescript } from '../utils';
+import { apiForTypescript } from '../shared/utils';
 import { transform } from './default-to-named-import';
 
 describe('replace default import with named import', () => {

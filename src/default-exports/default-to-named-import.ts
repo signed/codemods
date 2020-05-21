@@ -2,8 +2,8 @@ import * as K from 'ast-types/gen/kinds';
 import * as N from 'ast-types/gen/nodes';
 import { API, ASTPath, FileInfo, Identifier, ImportDeclaration, Options, StringLiteral } from 'jscodeshift/src/core';
 import { defaultExportNameResolver, ExportNameResolver } from './default-to-named';
-import { DoNotTransform } from './jscodeshift-constants';
-import { isImportToSourceFileInProject } from './shared';
+import { DoNotTransform } from '../shared/jscodeshift-constants';
+import { isImportToSourceFileInProject } from '../shared/shared';
 
 export const parser: string = 'ts';
 export default (file: FileInfo, api: API, _options: Options) => transform(file, api, _options, defaultExportNameResolver);

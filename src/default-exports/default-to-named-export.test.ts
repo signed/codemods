@@ -1,6 +1,6 @@
-import { DoNotTransform } from './jscodeshift-constants';
+import { DoNotTransform } from '../shared/jscodeshift-constants';
 import { transform } from './default-to-named-export';
-import { apiForTypescript } from '../utils';
+import { apiForTypescript } from '../shared/utils';
 import 'jest-extended';
 
 describe('replace default export with named export', () => {

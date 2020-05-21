@@ -4,8 +4,8 @@ import { Collection } from 'jscodeshift/src/Collection';
 import { API, ASTPath, ExportDefaultDeclaration, FileInfo, Identifier, JSCodeshift, NewExpression, Options, StringLiteral } from 'jscodeshift/src/core';
 import { basename, extname, dirname } from 'path';
 import { ExportName, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named';
-import { DoNotTransform } from './jscodeshift-constants';
-import { preserveCommentAtStartOfFile } from './shared';
+import { DoNotTransform } from '../shared/jscodeshift-constants';
+import { preserveCommentAtStartOfFile } from '../shared/shared';
 
 export const parser: string = 'ts';
 

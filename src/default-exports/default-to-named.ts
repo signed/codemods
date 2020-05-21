@@ -2,7 +2,7 @@ import * as K from 'ast-types/gen/kinds';
 import { API } from 'jscodeshift/src/core';
 import { dirname, resolve } from 'path';
 import { replaceWithNamedExport } from './default-to-named-export';
-import { DefaultFilesystem, Filesystem } from './filesystem';
+import { DefaultFilesystem, Filesystem } from '../shared/filesystem';
 
 export type ExportName = string;
 export type Importer = { path: string, importString: string };
