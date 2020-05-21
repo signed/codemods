@@ -1,6 +1,9 @@
 # codemods - what is it about
 A small collection of AST transformations to refactor typescript code.
-All transformations are driven by individual needs and are by no means a fully working and supported migration tool. 
+All transformations are driven by individual needs and are by no means a fully working and supported migration tool.
+There is no plan to provide a command line runner or to publish the transformers an an npm package.
+To use it checkout the code, run it and make adjustments as you need them.
+If they are useful too other, open a PR.
 ## Replace default exports with named exports
 This [blog post](https://humanwhocodes.com/blog/2019/01/stop-using-default-exports-javascript-module/) gives a bunch of drawbacks when using default exports.
 Replacing default exports is a two-step  process:
