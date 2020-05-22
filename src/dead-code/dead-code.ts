@@ -49,9 +49,11 @@ const extractImportStringsFrom = (sourceFile: string) => {
   return importStrings;
 };
 
-const allImportedFiles = allFilesInProject.reduce((acc: string[], sourceFile) => {
-  const importStrings = extractImportStringsFrom(sourceFile);
-  const pathToImportedFile = importStrings
+const dependentsBySourceFile = new Map<string, string[]>();
+allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, []));
+
+allFilesInProject.forEach(sourceFile => {
+  const pathToImportedFiles = extractImportStringsFrom(sourceFile)
     .filter(isImportToSourceFileInProject)
     .map(importString => {
       const importerDirectory = dirname(sourceFile);
@@ -71,17 +73,24 @@ const allImportedFiles = allFilesInProject.reduce((acc: string[], sourceFile) =>
       }
       return foundFile;
     });
-  return acc.concat(pathToImportedFile);
-}, []);
-
-
-const neverImportedInTheProject = allFilesInProject.filter(fileInProject => !allImportedFiles.includes(fileInProject));
+  pathToImportedFiles.forEach(importedFile => {
+    let dependents = dependentsBySourceFile.get(importedFile);
+    if (dependents === undefined) {
+      dependents = [];
+      dependentsBySourceFile.set(importedFile, dependents);
+    }
+    dependents.push(sourceFile);
+  });
+});
 
 const tests = (file: string) => !file.includes('.spec.');
 const storybook = (file: string) => !file.includes('.stories.');
 
-neverImportedInTheProject
-  .filter(tests)
-  .filter(storybook)
-  .forEach(ni => console.log(ni));
-
+Array.from(dependentsBySourceFile.entries())
+  .filter(([sourceFile, _dependents]) => tests(sourceFile))
+  .filter(([sourceFile, _dependents]) => storybook(sourceFile))
+  .filter(([_sourceFile, dependents]) => dependents.filter(tests).filter(storybook).length === 0)
+  .forEach(([sourceFile, dependents]) => {
+    console.log(sourceFile);
+    dependents.forEach(d => console.log('  ' + d));
+  });
