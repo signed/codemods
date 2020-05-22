@@ -25,7 +25,8 @@ const fileExtensionFrom = (path: string) => extname(path).slice(1);
 let projectDirectory = resolve(__dirname, '../../sample/default-exports/');
 
 const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
-const allImportedFiles = allFilesInProject.reduce((acc: string[], sourceFile) => {
+
+const extractImportStringsFrom = (sourceFile: string) => {
   const source = filesystem.readFileAsString(sourceFile);
   const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
   let root = j(source);
@@ -45,6 +46,11 @@ const allImportedFiles = allFilesInProject.reduce((acc: string[], sourceFile) =>
     }
     importStrings.push(importString);
   });
+  return importStrings;
+};
+
+const allImportedFiles = allFilesInProject.reduce((acc: string[], sourceFile) => {
+  const importStrings = extractImportStringsFrom(sourceFile);
   const pathToImportedFile = importStrings
     .filter(isImportToSourceFileInProject)
     .map(importString => {
