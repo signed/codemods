@@ -20,7 +20,7 @@ const walk = (directory: string, acc: string [] = []): string[] => {
   return acc;
 };
 
-const fileExtensionFrom = (sourceFile: string) => extname(sourceFile).slice(1);
+const fileExtensionFrom = (path: string) => extname(path).slice(1);
 
 let projectDirectory = resolve(__dirname, '../../sample/default-exports/');
 
