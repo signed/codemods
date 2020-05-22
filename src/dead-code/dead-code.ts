@@ -22,8 +22,8 @@ const walk = (directory: string, acc: string [] = []): string[] => {
 
 let projectDirectory = resolve(__dirname, '../../sample/default-exports/');
 
-const allFilesInProject = walk(projectDirectory).filter((file)=> (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
-const allImportedFiles = allFilesInProject.reduce((acc:string[], sourceFile) => {
+const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
+const allImportedFiles = allFilesInProject.reduce((acc: string[], sourceFile) => {
   const j = b.withParser('ts');
   const source = filesystem.readFileAsString(sourceFile);
   const root = j(source);
@@ -59,5 +59,12 @@ const allImportedFiles = allFilesInProject.reduce((acc:string[], sourceFile) => 
 
 
 const neverImportedInTheProject = allFilesInProject.filter(fileInProject => !allImportedFiles.includes(fileInProject));
-neverImportedInTheProject.forEach(ni => console.log(ni))
+
+const tests = (file: string) => !file.includes('.spec.');
+const storybook = (file: string) => !file.includes('.stories.');
+
+neverImportedInTheProject
+  .filter(tests)
+  .filter(storybook)
+  .forEach(ni => console.log(ni));
 
