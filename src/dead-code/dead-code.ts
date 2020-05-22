@@ -20,7 +20,9 @@ const walk = (directory: string, acc: string [] = []): string[] => {
   return acc;
 };
 
-const allFilesInProject = walk(resolve(__dirname, '../../sample/default-exports/'));
+let projectDirectory = resolve(__dirname, '../../sample/default-exports/');
+
+const allFilesInProject = walk(projectDirectory).filter((file)=> (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
 const allImportedFiles = allFilesInProject.reduce((acc:string[], sourceFile) => {
   const j = b.withParser('ts');
   const source = filesystem.readFileAsString(sourceFile);
@@ -39,8 +41,8 @@ const allImportedFiles = allFilesInProject.reduce((acc:string[], sourceFile) => 
     const absolutePath = resolve(importerDirectory, importString);
     const absoluteIndexPath = resolve(absolutePath, 'index');
     const candidates = [
-      absolutePath + '.ts', absolutePath + '.tsx',
-      absoluteIndexPath + '.ts', absoluteIndexPath + '.tsx'
+      absolutePath + '.ts', absolutePath + '.tsx', absolutePath + '.js', absolutePath + '.jsx',
+      absoluteIndexPath + '.ts', absoluteIndexPath + '.tsx', absoluteIndexPath + '.js', absoluteIndexPath + '.jsx'
     ];
 
     const foundFile = candidates.find(p => filesystem.exists(p));
