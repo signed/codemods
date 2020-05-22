@@ -30,33 +30,42 @@ const allImportedFiles = allFilesInProject.reduce((acc: string[], sourceFile) =>
   const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
   let root = j(source);
 
-  const importedFiles: string[] = [];
+  const importStrings: string[] = [];
+  root.find(j.ExportAllDeclaration).forEach(exportAllDeclaration => {
+    const importString = exportAllDeclaration.node.source.value;
+    if (typeof importString !== 'string') {
+      throw new Error('interesting, import literal is not a string');
+    }
+    importStrings.push(importString);
+  });
   root.find(j.ImportDeclaration).forEach(importDeclaration => {
     const importString = importDeclaration.node.source.value;
     if (typeof importString !== 'string') {
       throw new Error('interesting, import literal is not a string');
     }
-    if (!isImportToSourceFileInProject(importString)) {
-      return;
-    }
-    const importerDirectory = dirname(sourceFile);
-    const absolutePath = resolve(importerDirectory, importString);
-    const absoluteIndexPath = resolve(absolutePath, 'index');
-    const candidates = [
-      absolutePath + '.ts', absolutePath + '.tsx', absolutePath + '.js', absolutePath + '.jsx',
-      absoluteIndexPath + '.ts', absoluteIndexPath + '.tsx', absoluteIndexPath + '.js', absoluteIndexPath + '.jsx'
-    ];
-
-    const foundFile = candidates.find(p => filesystem.exists(p));
-    if (foundFile === undefined) {
-      console.log(sourceFile);
-      console.log(importString);
-      candidates.forEach(can => console.log(can));
-      throw new Error(`could not resolve import`);
-    }
-    importedFiles.push(foundFile);
+    importStrings.push(importString);
   });
-  return acc.concat(importedFiles);
+  const pathToImportedFile = importStrings
+    .filter(isImportToSourceFileInProject)
+    .map(importString => {
+      const importerDirectory = dirname(sourceFile);
+      const absolutePath = resolve(importerDirectory, importString);
+      const absoluteIndexPath = resolve(absolutePath, 'index');
+      const candidates = [
+        absolutePath + '.ts', absolutePath + '.tsx', absolutePath + '.js', absolutePath + '.jsx',
+        absoluteIndexPath + '.ts', absoluteIndexPath + '.tsx', absoluteIndexPath + '.js', absoluteIndexPath + '.jsx'
+      ];
+
+      const foundFile = candidates.find(p => filesystem.exists(p));
+      if (foundFile === undefined) {
+        console.log(sourceFile);
+        console.log(importString);
+        candidates.forEach(can => console.log(can));
+        throw new Error(`could not resolve import`);
+      }
+      return foundFile;
+    });
+  return acc.concat(pathToImportedFile);
 }, []);
 
 
