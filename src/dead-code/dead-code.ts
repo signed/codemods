@@ -1,6 +1,6 @@
 import { readdirSync, statSync } from 'fs';
-import b from 'jscodeshift';
-import { dirname, join, resolve } from 'path';
+import jscodeshift from 'jscodeshift';
+import { dirname, extname, join, resolve } from 'path';
 import { DefaultFilesystem } from '../shared/filesystem';
 import { isImportToSourceFileInProject } from '../shared/shared';
 
@@ -20,13 +20,15 @@ const walk = (directory: string, acc: string [] = []): string[] => {
   return acc;
 };
 
+const fileExtensionFrom = (sourceFile: string) => extname(sourceFile).slice(1);
+
 let projectDirectory = resolve(__dirname, '../../sample/default-exports/');
 
 const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
 const allImportedFiles = allFilesInProject.reduce((acc: string[], sourceFile) => {
-  const j = b.withParser('ts');
   const source = filesystem.readFileAsString(sourceFile);
-  const root = j(source);
+  const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
+  let root = j(source);
 
   const importedFiles: string[] = [];
   root.find(j.ImportDeclaration).forEach(importDeclaration => {
