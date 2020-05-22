@@ -19,5 +19,11 @@ describe('shared', () => {
     test('.json is a data file', () => {
       expect(isSourceFileImport('./some.json')).toBe(false);
     });
+    test('.mp3 is a binary file', () => {
+      expect(isSourceFileImport('./some.mp3')).toBe(false);
+    });
+    test('.css is a style file', () => {
+      expect(isSourceFileImport('./some.css')).toBe(false);
+    });
   });
 });

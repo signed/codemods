@@ -20,5 +20,6 @@ export const isLibraryImport = (importString: string): boolean => {
   return !importString.startsWith('.');
 };
 export const isSourceFileImport = (importString: string): boolean => {
-  return !(importString.endsWith('.png') || importString.endsWith('.json'));
+  const noSourceFileExtensions = ['.png', '.json', '.mp3', '.css']
+  return !(noSourceFileExtensions.some(ext => importString.endsWith(ext)));
 };
