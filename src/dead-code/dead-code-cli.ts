@@ -12,7 +12,7 @@ const projectPath = resolve(args[0]);
 console.log('project path: ' + projectPath);
 const unusedModules = probeForDeadCodeIn(projectPath);
 
-const details = unusedModules.map(unused => {
+const report = unusedModules.map(unused => {
   const lines: string[] = [];
   lines.push(unused.path)
   unused.dependents.forEach(dependent => {
@@ -21,4 +21,4 @@ const details = unusedModules.map(unused => {
   return lines.join('\n');
 }).join('\n');
 
-console.log(details);
+console.log(report);
