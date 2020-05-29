@@ -7,7 +7,7 @@
     "transform:copyright-headers": "jscodeshift --extensions=ts --transform src/remove-copyright-headers/remove-copyright-headers.ts sample/remove-copyright-headers/",
     "transform:default-imports": "jscodeshift --extensions=ts --transform src/default-exports/default-to-named-import.ts sample/default-exports",
     "transform:default-exports": "jscodeshift --extensions=ts --transform src/default-exports/default-to-named-export.ts sample/default-exports",
-    "probe": "ts-node src/dead-code/dead-code.ts",
+    "probe": "ts-node src/dead-code/dead-code-cli.ts sample/default-exports/",
     "test": "jest"
   },
   "devDependencies": {

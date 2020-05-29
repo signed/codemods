@@ -1,10 +1,13 @@
 import { readdirSync, statSync } from 'fs';
 import jscodeshift from 'jscodeshift';
 import { dirname, extname, join, resolve } from 'path';
-import { DefaultFilesystem } from '../shared/filesystem';
+import { DefaultFilesystem, Filesystem } from '../shared/filesystem';
 import { isImportToSourceFileInProject } from '../shared/shared';
 
-const filesystem = new DefaultFilesystem();
+export interface UnusedModule {
+  path: string;
+  dependents: string [];
+}
 
 const walk = (directory: string, acc: string [] = []): string[] => {
   const files = readdirSync(directory);
@@ -22,11 +25,7 @@ const walk = (directory: string, acc: string [] = []): string[] => {
 
 const fileExtensionFrom = (path: string) => extname(path).slice(1);
 
-let projectDirectory = resolve(__dirname, '../../sample/default-exports/');
-
-const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
-
-const extractImportStringsFrom = (sourceFile: string) => {
+const extractImportStringsFrom = (sourceFile: string, filesystem: Filesystem) => {
   const source = filesystem.readFileAsString(sourceFile);
   const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
   let root = j(source);
@@ -49,48 +48,56 @@ const extractImportStringsFrom = (sourceFile: string) => {
   return importStrings;
 };
 
-const dependentsBySourceFile = new Map<string, string[]>();
-allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, []));
+export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => {
+  const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
 
-allFilesInProject.forEach(sourceFile => {
-  const pathToImportedFiles = extractImportStringsFrom(sourceFile)
-    .filter(isImportToSourceFileInProject)
-    .map(importString => {
-      const importerDirectory = dirname(sourceFile);
-      const absolutePath = resolve(importerDirectory, importString);
-      const absoluteIndexPath = resolve(absolutePath, 'index');
-      const candidates = [
-        absolutePath + '.ts', absolutePath + '.tsx', absolutePath + '.js', absolutePath + '.jsx',
-        absoluteIndexPath + '.ts', absoluteIndexPath + '.tsx', absoluteIndexPath + '.js', absoluteIndexPath + '.jsx'
-      ];
+  const filesystem = new DefaultFilesystem();
+  const dependentsBySourceFile = new Map<string, string[]>();
+  allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, []));
 
-      const foundFile = candidates.find(p => filesystem.exists(p));
-      if (foundFile === undefined) {
-        console.log(sourceFile);
-        console.log(importString);
-        candidates.forEach(can => console.log(can));
-        throw new Error(`could not resolve import`);
+  allFilesInProject.forEach(sourceFile => {
+    const pathToImportedFiles = extractImportStringsFrom(sourceFile, filesystem)
+      .filter(isImportToSourceFileInProject)
+      .map(importString => {
+        const importerDirectory = dirname(sourceFile);
+        const absolutePath = resolve(importerDirectory, importString);
+        const absoluteIndexPath = resolve(absolutePath, 'index');
+        const candidates = [
+          absolutePath + '.ts', absolutePath + '.tsx', absolutePath + '.js', absolutePath + '.jsx',
+          absoluteIndexPath + '.ts', absoluteIndexPath + '.tsx', absoluteIndexPath + '.js', absoluteIndexPath + '.jsx'
+        ];
+
+        const foundFile = candidates.find(p => filesystem.exists(p));
+        if (foundFile === undefined) {
+          console.log(sourceFile);
+          console.log(importString);
+          candidates.forEach(can => console.log(can));
+          throw new Error(`could not resolve import`);
+        }
+        return foundFile;
+      });
+    pathToImportedFiles.forEach(importedFile => {
+      let dependents = dependentsBySourceFile.get(importedFile);
+      if (dependents === undefined) {
+        dependents = [];
+        dependentsBySourceFile.set(importedFile, dependents);
       }
-      return foundFile;
+      dependents.push(sourceFile);
     });
-  pathToImportedFiles.forEach(importedFile => {
-    let dependents = dependentsBySourceFile.get(importedFile);
-    if (dependents === undefined) {
-      dependents = [];
-      dependentsBySourceFile.set(importedFile, dependents);
-    }
-    dependents.push(sourceFile);
   });
-});
 
-const tests = (file: string) => !file.includes('.spec.');
-const storybook = (file: string) => !file.includes('.stories.');
+  const tests = (file: string) => !file.includes('.spec.');
+  const storybook = (file: string) => !file.includes('.stories.');
 
-Array.from(dependentsBySourceFile.entries())
-  .filter(([sourceFile, _dependents]) => tests(sourceFile))
-  .filter(([sourceFile, _dependents]) => storybook(sourceFile))
-  .filter(([_sourceFile, dependents]) => dependents.filter(tests).filter(storybook).length === 0)
-  .forEach(([sourceFile, dependents]) => {
-    console.log(sourceFile);
-    dependents.forEach(d => console.log('  ' + d));
-  });
+  return Array.from(dependentsBySourceFile.entries())
+    .filter(([sourceFile, _dependents]) => tests(sourceFile))
+    .filter(([sourceFile, _dependents]) => storybook(sourceFile))
+    .filter(([_sourceFile, dependents]) => dependents.filter(tests).filter(storybook).length === 0)
+    .map(([sourceFile, dependents]) => {
+      return {
+        path: sourceFile,
+        dependents
+      };
+    });
+};
+
