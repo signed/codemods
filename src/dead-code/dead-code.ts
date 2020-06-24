@@ -38,15 +38,33 @@ export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => 
   root.find(j.ExportAllDeclaration).forEach(exportAllDeclaration => {
     const importString = exportAllDeclaration.node.source.value;
     if (typeof importString !== 'string') {
-      throw new Error('interesting, import literal is not a string');
+      throw new Error(`interesting, import literal is not a string: ${typeof importString}`);
     }
     imports.push({ importString, imported: 'all' });
+  });
+  root.find(j.ExportNamedDeclaration).forEach(exportNamedDeclaration => {
+    const source = exportNamedDeclaration.node.source;
+    if (source == null) {
+      return
+    }
+    const importString = source.value;
+    if (typeof importString !== 'string') {
+      throw new Error(`interesting: ${typeof importString}`);
+    }
+    const imported = j(exportNamedDeclaration).find(j.ExportSpecifier).nodes().map(spec => {
+      const imported = spec.local?.name;
+      if (typeof imported !== 'string') {
+        throw new Error('interesting, look at this');
+      }
+      return imported;
+    });
+    imports.push({ importString, imported: imported });
   });
   root.find(j.ImportDeclaration).forEach(importDeclaration => {
     const collection = j(importDeclaration);
     const imported = collection.find(j.ImportSpecifier).nodes().map(spec => spec.imported.name);
     if (collection.find(j.ImportDefaultSpecifier).length > 0) {
-      imported.push('default')
+      imported.push('default');
     }
 
     const importString = importDeclaration.node.source.value;

@@ -15,13 +15,18 @@ const importIn = (source: string) => {
 };
 
 describe('extractImportStringsFrom', () => {
+  test('identify re export all exports', () => {
+    expect(importIn(`export * from './sample'`))
+      .toStrictEqual<Import>({ importString: './sample', imported: 'all' });
+  });
+  test('identify re export specific exports', () => {
+    expect(importIn(`export {one, two} from './sample'`))
+      .toStrictEqual<Import>({ importString: './sample', imported: ['one', 'two'] });
+  });
+
   test('identify default imports', () => {
     expect(importIn(`import anything from './sample'`))
       .toStrictEqual<Import>({ importString: './sample', imported: ['default'] });
-  });
-  test('identify export all declarations', () => {
-    expect(importIn(`export * from './sample'`))
-      .toStrictEqual<Import>({ importString: './sample', imported: 'all' });
   });
   test('identify named import', () => {
     expect(importIn(`import {one, two} from './sample'`))
