@@ -1,7 +1,8 @@
 import { readdirSync, statSync } from 'fs';
 import jscodeshift from 'jscodeshift';
+import { JSCodeshift } from 'jscodeshift/src/core';
 import { dirname, extname, join, resolve } from 'path';
-import { DefaultFilesystem, Filesystem } from '../shared/filesystem';
+import { DefaultFilesystem } from '../shared/filesystem';
 import { isImportToSourceFileInProject } from '../shared/shared';
 
 export interface UnusedModule {
@@ -25,9 +26,7 @@ const walk = (directory: string, acc: string [] = []): string[] => {
 
 const fileExtensionFrom = (path: string) => extname(path).slice(1);
 
-const extractImportStringsFrom = (sourceFile: string, filesystem: Filesystem) => {
-  const source = filesystem.readFileAsString(sourceFile);
-  const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
+const extractImportStringsFrom = (source: string, j: JSCodeshift) => {
   let root = j(source);
 
   const importStrings: string[] = [];
@@ -56,7 +55,10 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
   allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, []));
 
   allFilesInProject.forEach(sourceFile => {
-    const pathToImportedFiles = extractImportStringsFrom(sourceFile, filesystem)
+    const source = filesystem.readFileAsString(sourceFile);
+    const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
+
+    const pathToImportedFiles = extractImportStringsFrom(source, j)
       .filter(isImportToSourceFileInProject)
       .map(importString => {
         const importerDirectory = dirname(sourceFile);
