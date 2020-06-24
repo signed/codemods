@@ -8,10 +8,19 @@ test('identify the unused modules in the default exports sample ', () => {
   expect(result[0].path).toContain('sample/default-exports/consumer.ts');
 });
 
+const importInt = (source: string) => {
+  const imports = extractImportStringsFrom(source, apiForTypescript().j);
+  expect(imports).toHaveLength(1);
+  return imports[0];
+};
+
 describe('extractImportStringsFrom', () => {
-  test('identify default imports ', () => {
-    const strings = extractImportStringsFrom(`import flup from './sample'`, apiForTypescript().j);
-    expect(strings).toHaveLength(1);
-    expect(strings[0]).toStrictEqual({ importString: './sample', imports: ['default'] });
+  test('identify default imports', () => {
+    expect(importInt(`import anything from './sample'`))
+      .toStrictEqual({ importString: './sample', imports: ['default'] });
+  });
+  test('identify export all declarations', () => {
+    expect(importInt(`export * from './sample'`))
+      .toStrictEqual({ importString: './sample', imports: 'all' });
   });
 });
