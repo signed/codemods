@@ -11,6 +11,7 @@ test('identify the unused modules in the default exports sample ', () => {
 describe('extractImportStringsFrom', () => {
   test('identify default imports ', () => {
     const strings = extractImportStringsFrom(`import flup from './sample'`, apiForTypescript().j);
-    expect(strings).toStrictEqual(['./sample']);
+    expect(strings).toHaveLength(1);
+    expect(strings[0]).toStrictEqual({ importString: './sample', imports: ['default'] });
   });
 });

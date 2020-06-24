@@ -26,23 +26,28 @@ const walk = (directory: string, acc: string [] = []): string[] => {
 
 const fileExtensionFrom = (path: string) => extname(path).slice(1);
 
-export const extractImportStringsFrom = (source: string, j: JSCodeshift) => {
+export type Import = {
+  importString: string;
+  imports: string[] | 'all';
+}
+
+export const extractImportStringsFrom = (source: string, j: JSCodeshift): Import[] => {
   const root = j(source);
 
-  const importStrings: string[] = [];
+  const importStrings: Import[] = [];
   root.find(j.ExportAllDeclaration).forEach(exportAllDeclaration => {
     const importString = exportAllDeclaration.node.source.value;
     if (typeof importString !== 'string') {
       throw new Error('interesting, import literal is not a string');
     }
-    importStrings.push(importString);
+    importStrings.push({ importString, imports: 'all' });
   });
   root.find(j.ImportDeclaration).forEach(importDeclaration => {
     const importString = importDeclaration.node.source.value;
     if (typeof importString !== 'string') {
       throw new Error('interesting, import literal is not a string');
     }
-    importStrings.push(importString);
+    importStrings.push({ importString, imports: ['default'] });
   });
   return importStrings;
 };
@@ -59,10 +64,10 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
     const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
 
     const pathToImportedFiles = extractImportStringsFrom(source, j)
-      .filter(isImportToSourceFileInProject)
-      .map(importString => {
+      .filter(it => isImportToSourceFileInProject(it.importString))
+      .map(it => {
         const importerDirectory = dirname(sourceFile);
-        const absolutePath = resolve(importerDirectory, importString);
+        const absolutePath = resolve(importerDirectory, it.importString);
         const absoluteIndexPath = resolve(absolutePath, 'index');
         const candidates = [
           absolutePath + '.ts', absolutePath + '.tsx', absolutePath + '.js', absolutePath + '.jsx',
@@ -72,7 +77,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         const foundFile = candidates.find(p => filesystem.exists(p));
         if (foundFile === undefined) {
           console.log(sourceFile);
-          console.log(importString);
+          console.log(it);
           candidates.forEach(can => console.log(can));
           throw new Error(`could not resolve import`);
         }
