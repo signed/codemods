@@ -28,28 +28,30 @@ const fileExtensionFrom = (path: string) => extname(path).slice(1);
 
 export type Import = {
   importString: string;
-  imports: string[] | 'all';
+  imported: string[] | 'all';
 }
 
-export const extractImportStringsFrom = (source: string, j: JSCodeshift): Import[] => {
+export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => {
   const root = j(source);
 
-  const importStrings: Import[] = [];
+  const imports: Import[] = [];
   root.find(j.ExportAllDeclaration).forEach(exportAllDeclaration => {
     const importString = exportAllDeclaration.node.source.value;
     if (typeof importString !== 'string') {
       throw new Error('interesting, import literal is not a string');
     }
-    importStrings.push({ importString, imports: 'all' });
+    imports.push({ importString, imported: 'all' });
   });
   root.find(j.ImportDeclaration).forEach(importDeclaration => {
+    const imported = j(importDeclaration).find(j.ImportSpecifier).nodes().map(spec => spec.imported.name);
     const importString = importDeclaration.node.source.value;
     if (typeof importString !== 'string') {
       throw new Error('interesting, import literal is not a string');
     }
-    importStrings.push({ importString, imports: ['default'] });
+    imports.push({ importString, imported: ['default'] });
   });
-  return importStrings;
+
+  return imports;
 };
 
 export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => {
@@ -63,7 +65,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
     const source = filesystem.readFileAsString(sourceFile);
     const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
 
-    const pathToImportedFiles = extractImportStringsFrom(source, j)
+    const pathToImportedFiles = extractImportsFrom(source, j)
       .filter(it => isImportToSourceFileInProject(it.importString))
       .map(it => {
         const importerDirectory = dirname(sourceFile);
