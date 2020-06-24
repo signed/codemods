@@ -26,8 +26,8 @@ const walk = (directory: string, acc: string [] = []): string[] => {
 
 const fileExtensionFrom = (path: string) => extname(path).slice(1);
 
-const extractImportStringsFrom = (source: string, j: JSCodeshift) => {
-  let root = j(source);
+export const extractImportStringsFrom = (source: string, j: JSCodeshift) => {
+  const root = j(source);
 
   const importStrings: string[] = [];
   root.find(j.ExportAllDeclaration).forEach(exportAllDeclaration => {
