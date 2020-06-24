@@ -23,8 +23,12 @@ describe('extractImportStringsFrom', () => {
     expect(importIn(`export * from './sample'`))
       .toStrictEqual<Import>({ importString: './sample', imported: 'all' });
   });
-  test.skip('identify named import', () => {
-    expect(importIn(`export {one} from './sample'`))
-      .toStrictEqual<Import>({ importString: './sample', imported: ['one'] });
+  test('identify named import', () => {
+    expect(importIn(`import {one, two} from './sample'`))
+      .toStrictEqual<Import>({ importString: './sample', imported: ['one', 'two'] });
+  });
+  test('identify mixed named and default import', () => {
+    expect(importIn(`import one, {two} from './sample'`))
+      .toStrictEqual<Import>({ importString: './sample', imported: ['two', 'default'] });
   });
 });

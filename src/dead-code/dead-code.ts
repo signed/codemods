@@ -43,12 +43,17 @@ export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => 
     imports.push({ importString, imported: 'all' });
   });
   root.find(j.ImportDeclaration).forEach(importDeclaration => {
-    const imported = j(importDeclaration).find(j.ImportSpecifier).nodes().map(spec => spec.imported.name);
+    const collection = j(importDeclaration);
+    const imported = collection.find(j.ImportSpecifier).nodes().map(spec => spec.imported.name);
+    if (collection.find(j.ImportDefaultSpecifier).length > 0) {
+      imported.push('default')
+    }
+
     const importString = importDeclaration.node.source.value;
     if (typeof importString !== 'string') {
       throw new Error('interesting, import literal is not a string');
     }
-    imports.push({ importString, imported: ['default'] });
+    imports.push({ importString, imported: imported });
   });
 
   return imports;
