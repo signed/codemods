@@ -1,9 +1,12 @@
 import { resolve } from 'path';
+import { DefaultFilesystem } from '../shared/filesystem';
 import { apiForTypescript } from '../shared/utils';
 import { Export, extractExportsFrom, extractImportsFrom, Import, probeForDeadCodeIn } from './dead-code';
 
+const defaultExportsSamples = (file: string = '') => resolve(__dirname, `../../sample/default-exports/${file}`);
+
 test('identify the unused modules in the default exports sample ', () => {
-  const result = probeForDeadCodeIn(resolve(__dirname, '../../sample/default-exports/'));
+  const result = probeForDeadCodeIn(defaultExportsSamples());
   expect(result).toHaveLength(1);
   expect(result[0].path).toContain('sample/default-exports/consumer.ts');
 });
@@ -55,6 +58,18 @@ describe('extractExportsFrom', () => {
     expect(exportIn(`export default 42`))
       .toStrictEqual<Export>({ exportString: 'default' });
   });
+
+  test.each([
+    'default-export-class.ts',
+    'default-export-function.ts',
+    'default-export-object-literal.ts',
+    'default-export-string-literal.ts'
+  ])('detect default export in %s ', (filename) => {
+    const source = new DefaultFilesystem().readFileAsString(defaultExportsSamples(filename));
+    expect(exportsIn(source))
+      .toContainEqual<Export>({ exportString: 'default' });
+  })
+
   test('identify named exports', () => {
     expect(exportsIn(`export const one = 42
 export const two = 2`))
