@@ -191,6 +191,24 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
   const tests = (file: string) => !file.includes('.spec.');
   const storybook = (file: string) => !file.includes('.stories.');
 
+  Array.from(usageLedger.entries())
+    .forEach(([sourceFile, entry]) => {
+      //sanity check to make sure all exports have been extracted
+      //looking at the recorded imports there should also be a declared export
+      const exports = entry.exports;
+      if (exports.declared === 'not-recorded') {
+        throw new Error(`investigate why no exports have been recorded for ${sourceFile}`);
+      }
+      Array.from(exports.usages.keys()).forEach(usage => {
+        if (usage === 'all-exports') {
+          return;
+        }
+        if (!exports.declared.includes(usage)) {
+          throw new Error(`a file is importing ${usage} from ${sourceFile} but no export was extracted`);
+        }
+      });
+    });
+
   return Array.from(usageLedger.entries())
     .filter(([sourceFile, _entry]) => tests(sourceFile))
     .filter(([sourceFile, _entry]) => storybook(sourceFile))
