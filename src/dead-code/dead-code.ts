@@ -31,7 +31,7 @@ export type Import = {
 }
 
 export type Export = {
-  exportString: string;
+  exportString: ExportName;
 }
 
 export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => {
@@ -97,6 +97,14 @@ export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => 
   return imports;
 };
 
+type ExportName = string;
+type PathToSourceFile = string;
+type UsageLedgerEntry = {
+  sourceFile: PathToSourceFile;
+  usage: PathToSourceFile[];
+  exports: Map<ExportName, PathToSourceFile[]>
+}
+
 export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => {
   const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
 
@@ -128,6 +136,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         }
         return foundFile;
       });
+
     pathToImportedFiles.forEach(importedFile => {
       let dependents = dependentsBySourceFile.get(importedFile);
       if (dependents === undefined) {
