@@ -106,7 +106,21 @@ type PathToSourceFile = string;
 type UsageLedgerEntry = {
   sourceFile: PathToSourceFile;
   usage: PathToSourceFile[];
-  exports: Map<ExportName, PathToSourceFile[]>
+  exports: {
+    declared: ExportName[] | 'not-recorded',
+    imported: Map<ExportName, PathToSourceFile[]>
+  }
+}
+
+function initialLedgerEntryFor(sourceFile: string): UsageLedgerEntry {
+  return {
+    sourceFile: sourceFile,
+    usage: [],
+    exports: {
+      declared: 'not-recorded',
+      imported: new Map()
+    }
+  };
 }
 
 export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => {
@@ -114,9 +128,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
 
   const filesystem = new DefaultFilesystem();
   const dependentsBySourceFile = new Map<PathToSourceFile, UsageLedgerEntry>();
-  allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, {
-    sourceFile, usage: [], exports: new Map()
-  }));
+  allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, initialLedgerEntryFor(sourceFile)));
 
   allFilesInProject.forEach(sourceFile => {
     const source = filesystem.readFileAsString(sourceFile);
@@ -150,11 +162,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
     pathToImportedFiles.forEach(resolvedImport => {
       let entry = dependentsBySourceFile.get(resolvedImport.pathToSourceFile);
       if (entry === undefined) {
-        entry = {
-          sourceFile: resolvedImport.pathToSourceFile,
-          usage: [],
-          exports: new Map()
-        };
+        entry = initialLedgerEntryFor(resolvedImport.pathToSourceFile);
         dependentsBySourceFile.set(resolvedImport.pathToSourceFile, entry);
         throw Error('should not happen');
       }
