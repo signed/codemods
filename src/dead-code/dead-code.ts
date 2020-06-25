@@ -133,15 +133,15 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
           absoluteIndexPath + '.ts', absoluteIndexPath + '.tsx', absoluteIndexPath + '.js', absoluteIndexPath + '.jsx'
         ];
 
-        const foundFile = candidates.find(p => filesystem.exists(p));
-        if (foundFile === undefined) {
+        const foundSourceFile = candidates.find(p => filesystem.exists(p));
+        if (foundSourceFile === undefined) {
           console.log(sourceFile);
           console.log(it);
           candidates.forEach(can => console.log(can));
           throw new Error(`could not resolve import`);
         }
         return {
-          pathToSourceFile: foundFile,
+          pathToSourceFile: foundSourceFile,
           importString: it.importString,
           imported: it.imported
         };
