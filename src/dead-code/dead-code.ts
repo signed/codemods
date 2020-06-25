@@ -180,7 +180,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
           let usageEntry = entry!.exports.imported.get(it);
           if (usageEntry === undefined) {
             usageEntry = [];
-            entry!.exports.imported.set('all-exports', usageEntry);
+            entry!.exports.imported.set(it, usageEntry);
           }
           usageEntry.push(sourceFile);
         });
