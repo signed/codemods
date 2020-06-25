@@ -209,6 +209,31 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
   const tests = (file: string) => !file.includes('.spec.');
   const storybook = (file: string) => !file.includes('.stories.');
 
+  //find unused exports
+  Array.from(usageLedger.entries())
+    .filter(([sourceFile, _entry]) => tests(sourceFile))
+    .filter(([sourceFile, _entry]) => storybook(sourceFile))
+    .filter(([sourceFile, entry]) => {
+      const exports = entry.exports;
+      const declared = exports.declared;
+      if (declared === 'not-recorded') {
+        throw new Error(`investigate why no exports have been recorded for ${sourceFile}`);
+      }
+      if (exports.usages.has('all-exports')) {
+        throw new Error('star import, really...');
+      }
+
+      declared.forEach(exp => {
+        const usages = exports.usages.get(exp) ?? [];
+        if (usages.filter(tests).filter(storybook).length === 0) {
+          console.log(sourceFile + ':' + exp + ' is not imported in production code');
+          usages.forEach(usage => console.log('  ' + usage));
+        }
+      });
+      return entry.usages.filter(tests).filter(storybook).length === 0;
+    });
+
+  //find unused modules
   return Array.from(usageLedger.entries())
     .filter(([sourceFile, _entry]) => tests(sourceFile))
     .filter(([sourceFile, _entry]) => storybook(sourceFile))
