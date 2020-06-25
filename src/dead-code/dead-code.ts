@@ -148,6 +148,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
           exports: new Map()
         };
         dependentsBySourceFile.set(importedFile, entry);
+        throw Error('should not happen');
       }
       entry.usage.push(sourceFile);
     });
