@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { apiForTypescript } from '../shared/utils';
-import { extractImportsFrom, Import, probeForDeadCodeIn } from './dead-code';
+import { Export, extractExportsFrom, extractImportsFrom, Import, probeForDeadCodeIn } from './dead-code';
 
 test('identify the unused modules in the default exports sample ', () => {
   const result = probeForDeadCodeIn(resolve(__dirname, '../../sample/default-exports/'));
@@ -39,5 +39,25 @@ describe('extractImportStringsFrom', () => {
   test('identify renamed named import', () => {
     expect(importIn(`import {one as two} from './sample'`))
       .toStrictEqual<Import>({ importString: './sample', imported: ['one'] });
+  });
+});
+
+const exportsIn = (source: string) => extractExportsFrom(source, apiForTypescript().j);
+
+const exportIn = (source: string) => {
+  const exports = exportsIn(source);
+  expect(exports).toHaveLength(1);
+  return exports[0];
+};
+
+describe('extractExportsFrom', () => {
+  test('identify default export', () => {
+    expect(exportIn(`export default 42`))
+      .toStrictEqual<Export>({ exportString: 'default' });
+  });
+  test('identify named exports', () => {
+    expect(exportsIn(`export const one = 42
+export const two = 2`))
+      .toStrictEqual<Export[]>([{ exportString: 'one' }, { exportString: 'two' }]);
   });
 });

@@ -30,6 +30,27 @@ export type Import = {
   imported: string[] | 'all';
 }
 
+export type Export = {
+  exportString: string;
+}
+
+export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => {
+  const root = j(source);
+  const exports: Export[] = [];
+  const defaultExport = root.find(j.ExportDefaultDeclaration);
+  if (defaultExport.length > 0) {
+    exports.push({ exportString: 'default' });
+  }
+
+  root.find(j.ExportNamedDeclaration).forEach(exp => {
+    j(exp).find(j.Identifier).nodes().forEach(identifier => {
+      exports.push({ exportString: identifier.name });
+    });
+  });
+
+  return exports;
+};
+
 export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => {
   const root = j(source);
 
