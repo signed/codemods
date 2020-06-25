@@ -30,6 +30,10 @@ export type Import = {
   imported: string[] | 'all';
 }
 
+export type ResolvedImport = Import & {
+  pathToSourceFile: PathToSourceFile
+}
+
 export type Export = {
   exportString: ExportName;
 }
@@ -111,14 +115,14 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
   const filesystem = new DefaultFilesystem();
   const dependentsBySourceFile = new Map<PathToSourceFile, UsageLedgerEntry>();
   allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, {
-    sourceFile, usage:[], exports: new Map()
+    sourceFile, usage: [], exports: new Map()
   }));
 
   allFilesInProject.forEach(sourceFile => {
     const source = filesystem.readFileAsString(sourceFile);
     const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
 
-    const pathToImportedFiles = extractImportsFrom(source, j)
+    const pathToImportedFiles: ResolvedImport[] = extractImportsFrom(source, j)
       .filter(it => isImportToSourceFileInProject(it.importString))
       .map(it => {
         const importerDirectory = dirname(sourceFile);
@@ -136,18 +140,22 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
           candidates.forEach(can => console.log(can));
           throw new Error(`could not resolve import`);
         }
-        return foundFile;
+        return {
+          pathToSourceFile: foundFile,
+          importString: it.importString,
+          imported: it.imported
+        };
       });
 
-    pathToImportedFiles.forEach(importedFile => {
-      let entry = dependentsBySourceFile.get(importedFile);
+    pathToImportedFiles.forEach(resolvedImport => {
+      let entry = dependentsBySourceFile.get(resolvedImport.pathToSourceFile);
       if (entry === undefined) {
         entry = {
-          sourceFile:importedFile,
-          usage:[],
+          sourceFile: resolvedImport.pathToSourceFile,
+          usage: [],
           exports: new Map()
         };
-        dependentsBySourceFile.set(importedFile, entry);
+        dependentsBySourceFile.set(resolvedImport.pathToSourceFile, entry);
         throw Error('should not happen');
       }
       entry.usage.push(sourceFile);
