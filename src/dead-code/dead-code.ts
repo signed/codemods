@@ -167,7 +167,6 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         throw Error('should not happen');
       }
       entry.usage.push(sourceFile);
-      //entry.exports TODO
       if (resolvedImport.imported === 'all-exports') {
         let usageEntry = entry.exports.imported.get('all-exports');
         if (usageEntry === undefined) {
@@ -186,6 +185,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         });
       }
     });
+    usageLedger.get(sourceFile)!.exports.declared = extractExportsFrom(source, j).map(exp => exp.exportString);
   });
 
   const tests = (file: string) => !file.includes('.spec.');
