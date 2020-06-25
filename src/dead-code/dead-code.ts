@@ -105,20 +105,20 @@ type ExportName = string;
 type PathToSourceFile = string;
 type UsageLedgerEntry = {
   sourceFile: PathToSourceFile;
-  usage: PathToSourceFile[];
+  usages: PathToSourceFile[];
   exports: {
     declared: ExportName[] | 'not-recorded',
-    imported: Map<ExportName | 'all-exports', PathToSourceFile[]>
+    usages: Map<ExportName | 'all-exports', PathToSourceFile[]>
   }
 }
 
 function initialLedgerEntryFor(sourceFile: string): UsageLedgerEntry {
   return {
     sourceFile: sourceFile,
-    usage: [],
+    usages: [],
     exports: {
       declared: 'not-recorded',
-      imported: new Map()
+      usages: new Map()
     }
   };
 }
@@ -166,20 +166,20 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         usageLedger.set(resolvedImport.pathToSourceFile, entry);
         throw Error('should not happen');
       }
-      entry.usage.push(sourceFile);
+      entry.usages.push(sourceFile);
       if (resolvedImport.imported === 'all-exports') {
-        let usageEntry = entry.exports.imported.get('all-exports');
+        let usageEntry = entry.exports.usages.get('all-exports');
         if (usageEntry === undefined) {
           usageEntry = [];
-          entry.exports.imported.set('all-exports', usageEntry);
+          entry.exports.usages.set('all-exports', usageEntry);
         }
         usageEntry.push(sourceFile);
       } else {
         resolvedImport.imported.forEach(it => {
-          let usageEntry = entry!.exports.imported.get(it);
+          let usageEntry = entry!.exports.usages.get(it);
           if (usageEntry === undefined) {
             usageEntry = [];
-            entry!.exports.imported.set(it, usageEntry);
+            entry!.exports.usages.set(it, usageEntry);
           }
           usageEntry.push(sourceFile);
         });
@@ -194,11 +194,11 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
   return Array.from(usageLedger.entries())
     .filter(([sourceFile, _entry]) => tests(sourceFile))
     .filter(([sourceFile, _entry]) => storybook(sourceFile))
-    .filter(([_sourceFile, entry]) => entry.usage.filter(tests).filter(storybook).length === 0)
+    .filter(([_sourceFile, entry]) => entry.usages.filter(tests).filter(storybook).length === 0)
     .map(([sourceFile, entry]) => {
       return {
         path: sourceFile,
-        dependents: entry.usage
+        dependents: entry.usages
       };
     });
 };
