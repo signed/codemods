@@ -109,8 +109,10 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
   const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
 
   const filesystem = new DefaultFilesystem();
-  const dependentsBySourceFile = new Map<string, string[]>();
-  allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, []));
+  const dependentsBySourceFile = new Map<PathToSourceFile, UsageLedgerEntry>();
+  allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, {
+    sourceFile, usage:[], exports: new Map()
+  }));
 
   allFilesInProject.forEach(sourceFile => {
     const source = filesystem.readFileAsString(sourceFile);
@@ -138,12 +140,16 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
       });
 
     pathToImportedFiles.forEach(importedFile => {
-      let dependents = dependentsBySourceFile.get(importedFile);
-      if (dependents === undefined) {
-        dependents = [];
-        dependentsBySourceFile.set(importedFile, dependents);
+      let entry = dependentsBySourceFile.get(importedFile);
+      if (entry === undefined) {
+        entry = {
+          sourceFile:importedFile,
+          usage:[],
+          exports: new Map()
+        };
+        dependentsBySourceFile.set(importedFile, entry);
       }
-      dependents.push(sourceFile);
+      entry.usage.push(sourceFile);
     });
   });
 
@@ -151,13 +157,13 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
   const storybook = (file: string) => !file.includes('.stories.');
 
   return Array.from(dependentsBySourceFile.entries())
-    .filter(([sourceFile, _dependents]) => tests(sourceFile))
-    .filter(([sourceFile, _dependents]) => storybook(sourceFile))
-    .filter(([_sourceFile, dependents]) => dependents.filter(tests).filter(storybook).length === 0)
-    .map(([sourceFile, dependents]) => {
+    .filter(([sourceFile, _entry]) => tests(sourceFile))
+    .filter(([sourceFile, _entry]) => storybook(sourceFile))
+    .filter(([_sourceFile, entry]) => entry.usage.filter(tests).filter(storybook).length === 0)
+    .map(([sourceFile, entry]) => {
       return {
         path: sourceFile,
-        dependents
+        dependents: entry.usage
       };
     });
 };
