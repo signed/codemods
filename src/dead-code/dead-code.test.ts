@@ -20,7 +20,7 @@ const importIn = (source: string) => {
 describe('extractImportStringsFrom', () => {
   test('identify re export all exports', () => {
     expect(importIn(`export * from './sample'`))
-      .toStrictEqual<Import>({ importString: './sample', imported: 'all' });
+      .toStrictEqual<Import>({ importString: './sample', imported: 'all-exports' });
   });
   test('identify re export specific exports', () => {
     expect(importIn(`export {one, two} from './sample'`))

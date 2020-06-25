@@ -27,7 +27,7 @@ const fileExtensionFrom = (path: string) => extname(path).slice(1);
 
 export type Import = {
   importString: string;
-  imported: string[] | 'all';
+  imported: string[] | 'all-exports';
 }
 
 export type ResolvedImport = Import & {
@@ -64,7 +64,7 @@ export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => 
     if (typeof importString !== 'string') {
       throw new Error(`interesting, import literal is not a string: ${typeof importString}`);
     }
-    imports.push({ importString, imported: 'all' });
+    imports.push({ importString, imported: 'all-exports' });
   });
   root.find(j.ExportNamedDeclaration).forEach(exportNamedDeclaration => {
     const source = exportNamedDeclaration.node.source;
@@ -108,7 +108,7 @@ type UsageLedgerEntry = {
   usage: PathToSourceFile[];
   exports: {
     declared: ExportName[] | 'not-recorded',
-    imported: Map<ExportName, PathToSourceFile[]>
+    imported: Map<ExportName | 'all-exports', PathToSourceFile[]>
   }
 }
 
@@ -127,14 +127,14 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
   const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
 
   const filesystem = new DefaultFilesystem();
-  const dependentsBySourceFile = new Map<PathToSourceFile, UsageLedgerEntry>();
-  allFilesInProject.forEach(sourceFile => dependentsBySourceFile.set(sourceFile, initialLedgerEntryFor(sourceFile)));
+  const usageLedger = new Map<PathToSourceFile, UsageLedgerEntry>();
+  allFilesInProject.forEach(sourceFile => usageLedger.set(sourceFile, initialLedgerEntryFor(sourceFile)));
 
   allFilesInProject.forEach(sourceFile => {
     const source = filesystem.readFileAsString(sourceFile);
     const j = jscodeshift.withParser(fileExtensionFrom(sourceFile));
 
-    const pathToImportedFiles: ResolvedImport[] = extractImportsFrom(source, j)
+    const imports: ResolvedImport[] = extractImportsFrom(source, j)
       .filter(it => isImportToSourceFileInProject(it.importString))
       .map(it => {
         const importerDirectory = dirname(sourceFile);
@@ -159,21 +159,39 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         };
       });
 
-    pathToImportedFiles.forEach(resolvedImport => {
-      let entry = dependentsBySourceFile.get(resolvedImport.pathToSourceFile);
+    imports.forEach(resolvedImport => {
+      let entry = usageLedger.get(resolvedImport.pathToSourceFile);
       if (entry === undefined) {
         entry = initialLedgerEntryFor(resolvedImport.pathToSourceFile);
-        dependentsBySourceFile.set(resolvedImport.pathToSourceFile, entry);
+        usageLedger.set(resolvedImport.pathToSourceFile, entry);
         throw Error('should not happen');
       }
       entry.usage.push(sourceFile);
+      //entry.exports TODO
+      if (resolvedImport.imported === 'all-exports') {
+        let usageEntry = entry.exports.imported.get('all-exports');
+        if (usageEntry === undefined) {
+          usageEntry = [];
+          entry.exports.imported.set('all-exports', usageEntry);
+        }
+        usageEntry.push(sourceFile);
+      } else {
+        resolvedImport.imported.forEach(it => {
+          let usageEntry = entry!.exports.imported.get(it);
+          if (usageEntry === undefined) {
+            usageEntry = [];
+            entry!.exports.imported.set('all-exports', usageEntry);
+          }
+          usageEntry.push(sourceFile);
+        });
+      }
     });
   });
 
   const tests = (file: string) => !file.includes('.spec.');
   const storybook = (file: string) => !file.includes('.stories.');
 
-  return Array.from(dependentsBySourceFile.entries())
+  return Array.from(usageLedger.entries())
     .filter(([sourceFile, _entry]) => tests(sourceFile))
     .filter(([sourceFile, _entry]) => storybook(sourceFile))
     .filter(([_sourceFile, entry]) => entry.usage.filter(tests).filter(storybook).length === 0)
