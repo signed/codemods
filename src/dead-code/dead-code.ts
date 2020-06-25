@@ -1,6 +1,5 @@
 import { readdirSync, statSync } from 'fs';
-import jscodeshift from 'jscodeshift';
-import { JSCodeshift } from 'jscodeshift/src/core';
+import jscodeshift, { JSCodeshift } from 'jscodeshift';
 import { dirname, extname, join, resolve } from 'path';
 import { DefaultFilesystem } from '../shared/filesystem';
 import { isImportToSourceFileInProject } from '../shared/shared';
