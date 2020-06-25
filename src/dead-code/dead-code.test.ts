@@ -36,4 +36,8 @@ describe('extractImportStringsFrom', () => {
     expect(importIn(`import one, {two} from './sample'`))
       .toStrictEqual<Import>({ importString: './sample', imported: ['two', 'default'] });
   });
+  test('identify renamed named import', () => {
+    expect(importIn(`import {one as two} from './sample'`))
+      .toStrictEqual<Import>({ importString: './sample', imported: ['one'] });
+  });
 });
