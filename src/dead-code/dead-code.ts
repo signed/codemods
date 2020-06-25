@@ -188,9 +188,6 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
     usageLedger.get(sourceFile)!.exports.declared = extractExportsFrom(source, j).map(exp => exp.exportString);
   });
 
-  const tests = (file: string) => !file.includes('.spec.');
-  const storybook = (file: string) => !file.includes('.stories.');
-
   Array.from(usageLedger.entries())
     .forEach(([sourceFile, entry]) => {
       //sanity check to make sure all exports have been extracted
@@ -208,6 +205,9 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         }
       });
     });
+
+  const tests = (file: string) => !file.includes('.spec.');
+  const storybook = (file: string) => !file.includes('.stories.');
 
   return Array.from(usageLedger.entries())
     .filter(([sourceFile, _entry]) => tests(sourceFile))
