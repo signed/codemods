@@ -44,7 +44,7 @@ export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => 
   root.find(j.ExportNamedDeclaration).forEach(exportNamedDeclaration => {
     const source = exportNamedDeclaration.node.source;
     if (source == null) {
-      return
+      return;
     }
     const importString = source.value;
     if (typeof importString !== 'string') {
