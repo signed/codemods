@@ -104,4 +104,10 @@ export const two = 2`))
     expect(exportIn(`export { One as Two } from '../sample'`))
       .toStrictEqual<Export>({ exportString: 'Two' });
   });
+  test('extract function export', () => {
+    expect(exportIn(`export async function one() {
+  return undefined;
+}`))
+      .toStrictEqual<Export>({ exportString: 'one' });
+  });
 });

@@ -88,6 +88,11 @@ export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => 
         exports.push({ exportString: declaration.id.name });
       }
     }
+    if (declaration?.type === 'FunctionDeclaration') {
+      if (declaration.id?.type === 'Identifier') {
+        exports.push({ exportString: declaration.id.name });
+      }
+    }
   });
 
   return exports;
