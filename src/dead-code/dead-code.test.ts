@@ -75,4 +75,9 @@ describe('extractExportsFrom', () => {
 export const two = 2`))
       .toStrictEqual<Export[]>([{ exportString: 'one' }, { exportString: 'two' }]);
   });
+
+  test('only extract the identifier of the export ', () => {
+    expect(exportIn(`export const one = (notAnExport:string) => {}`))
+      .toStrictEqual<Export>({ exportString: 'one' });
+  });
 });

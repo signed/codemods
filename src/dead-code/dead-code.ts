@@ -47,9 +47,16 @@ export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => 
   }
 
   root.find(j.ExportNamedDeclaration).forEach(exp => {
-    j(exp).find(j.Identifier).nodes().forEach(identifier => {
-      exports.push({ exportString: identifier.name });
-    });
+    const declaration = exp.node.declaration;
+    if (declaration?.type === 'VariableDeclaration') {
+      declaration.declarations.forEach((blub) => {
+        if (blub.type === 'VariableDeclarator') {
+          if (blub.id.type === 'Identifier') {
+            exports.push({ exportString: blub.id.name });
+          }
+        }
+      });
+    }
   });
 
   return exports;
