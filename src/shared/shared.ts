@@ -17,7 +17,7 @@ export const preserveCommentAtStartOfFile = (root: Collection<any>, j: JSCodeshi
 export const isImportToSourceFileInProject = (importString: string) => !isLibraryImport(importString) && isSourceFileImport(importString);
 
 export const isLibraryImport = (importString: string): boolean => {
-  return !importString.startsWith('.');
+  return importString.includes('node_modules') || !importString.startsWith('.');
 };
 export const isSourceFileImport = (importString: string): boolean => {
   const noSourceFileExtensions = ['.png', '.json', '.mp3', '.css']
