@@ -1,5 +1,5 @@
-import { probeForDeadCodeIn } from './dead-code';
 import { resolve } from 'path';
+import { probeForDeadCodeIn } from './dead-code';
 
 const args = process.argv.slice(2);
 
@@ -10,9 +10,8 @@ if (args.length !== 1) {
 
 const projectPath = resolve(args[0]);
 console.log('project path: ' + projectPath);
-const unusedModules = probeForDeadCodeIn(projectPath);
-
-const report = unusedModules.map(unused => {
+const unused = probeForDeadCodeIn(projectPath);
+const report = unused.modules.map(unused => {
   const lines: string[] = [];
   lines.push(unused.path)
   unused.dependents.forEach(dependent => {

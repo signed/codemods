@@ -5,8 +5,19 @@ import { DefaultFilesystem } from '../shared/filesystem';
 import { isImportToSourceFileInProject } from '../shared/shared';
 
 export interface UnusedModule {
-  path: string;
-  dependents: string [];
+  path: PathToSourceFile;
+  dependents: PathToSourceFile [];
+}
+
+export interface UnusedExports {
+  path: PathToSourceFile;
+  exports: ExportName[]
+  dependents: PathToSourceFile[]
+}
+
+export interface Unused {
+  modules: UnusedModule[];
+  exports: UnusedExports[];
 }
 
 const walk = (
@@ -169,7 +180,7 @@ function initialLedgerEntryFor(sourceFile: string): UsageLedgerEntry {
   };
 }
 
-export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => {
+export const probeForDeadCodeIn = (projectDirectory: string): Unused => {
   // noinspection JSUnusedLocalSymbols
   const descent = (path: string) => true;
   const allFilesInProject = walk(projectDirectory, descent).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
@@ -294,8 +305,10 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
       return entry.usages.filter(tests).filter(storybook).length === 0;
     });
 
+  const exports: UnusedExports[] = [];
+
   //find unused modules
-  return Array.from(usageLedger.entries())
+  const modules = Array.from(usageLedger.entries())
     .filter(([sourceFile, _entry]) => tests(sourceFile))
     .filter(([sourceFile, _entry]) => storybook(sourceFile))
     .filter(([_sourceFile, entry]) => entry.usages.filter(tests).filter(storybook).length === 0)
@@ -305,5 +318,6 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         dependents: entry.usages
       };
     });
+  return { modules, exports };
 };
 

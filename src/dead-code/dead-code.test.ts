@@ -6,7 +6,7 @@ import { Export, extractExportsFrom, extractImportsFrom, Import, probeForDeadCod
 const defaultExportsSamples = (file: string = '') => resolve(__dirname, `../../sample/default-exports/${file}`);
 
 test('identify the unused modules in the default exports sample ', () => {
-  const result = probeForDeadCodeIn(defaultExportsSamples());
+  const result = probeForDeadCodeIn(defaultExportsSamples()).modules;
   expect(result).toHaveLength(1);
   expect(result[0].path).toContain('sample/default-exports/consumer.ts');
 });
