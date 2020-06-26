@@ -9,13 +9,19 @@ export interface UnusedModule {
   dependents: string [];
 }
 
-const walk = (directory: string, acc: string [] = []): string[] => {
+const walk = (
+  directory: string,
+  descent: (path: string) => boolean,
+  acc: string [] = []
+): string[] => {
   const files = readdirSync(directory);
   files.forEach(file => {
     const fullPath = join(directory, file);
     const stat = statSync(fullPath);
     if (stat.isDirectory()) {
-      walk(fullPath, acc);
+      if (descent(fullPath)) {
+        walk(fullPath, descent, acc);
+      }
     } else {
       acc.push(fullPath);
     }
@@ -131,7 +137,8 @@ function initialLedgerEntryFor(sourceFile: string): UsageLedgerEntry {
 }
 
 export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => {
-  const allFilesInProject = walk(projectDirectory).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
+  const descent = (path: string) => true;
+  const allFilesInProject = walk(projectDirectory, descent).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
 
   const filesystem = new DefaultFilesystem();
   const usageLedger = new Map<PathToSourceFile, UsageLedgerEntry>();
