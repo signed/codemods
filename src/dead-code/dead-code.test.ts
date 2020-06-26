@@ -17,7 +17,7 @@ const importIn = (source: string) => {
   return imports[0];
 };
 
-describe('extractImportStringsFrom', () => {
+describe('extractImportFrom', () => {
   test('identify re export all exports', () => {
     expect(importIn(`export * from './sample'`))
       .toStrictEqual<Import>({ importString: './sample', imported: 'all-exports' });
