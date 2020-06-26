@@ -68,7 +68,7 @@ describe('extractExportsFrom', () => {
     const source = new DefaultFilesystem().readFileAsString(defaultExportsSamples(filename));
     expect(exportsIn(source))
       .toContainEqual<Export>({ exportString: 'default' });
-  })
+  });
 
   test('identify named exports', () => {
     expect(exportsIn(`export const one = 42
@@ -79,5 +79,17 @@ export const two = 2`))
   test('only extract the identifier of the export ', () => {
     expect(exportIn(`export const one = (notAnExport:string) => {}`))
       .toStrictEqual<Export>({ exportString: 'one' });
+  });
+  test('extract interface exports', () => {
+    expect(exportIn(`export interface One {}`))
+      .toStrictEqual<Export>({ exportString: 'One' });
+  });
+  test('extract class exports', () => {
+    expect(exportIn(`export class One {}`))
+      .toStrictEqual<Export>({ exportString: 'One' });
+  });
+  test('extract enum exports', () => {
+    expect(exportIn(`export enum One { one, two}`))
+      .toStrictEqual<Export>({ exportString: 'One' });
   });
 });

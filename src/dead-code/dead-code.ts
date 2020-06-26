@@ -63,6 +63,21 @@ export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => 
         }
       });
     }
+    if (declaration?.type === 'TSInterfaceDeclaration') {
+      if (declaration.id.type === 'Identifier') {
+        exports.push({ exportString: declaration.id.name });
+      }
+    }
+    if (declaration?.type === 'ClassDeclaration') {
+      if (declaration.id?.type === 'Identifier') {
+        exports.push({ exportString: declaration.id.name });
+      }
+    }
+    if (declaration?.type === 'TSEnumDeclaration') {
+      if (declaration.id?.type === 'Identifier') {
+        exports.push({ exportString: declaration.id.name });
+      }
+    }
   });
 
   return exports;
