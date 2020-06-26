@@ -54,6 +54,11 @@ export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => 
 
   root.find(j.ExportNamedDeclaration).forEach(exp => {
     const declaration = exp.node.declaration;
+
+    exp.node.specifiers.forEach(spec => {
+      exports.push({ exportString: spec.exported.name });
+    })
+
     if (declaration?.type === 'VariableDeclaration') {
       declaration.declarations.forEach((blub) => {
         if (blub.type === 'VariableDeclarator') {
@@ -74,6 +79,11 @@ export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => 
       }
     }
     if (declaration?.type === 'TSEnumDeclaration') {
+      if (declaration.id?.type === 'Identifier') {
+        exports.push({ exportString: declaration.id.name });
+      }
+    }
+    if (declaration?.type === 'TSTypeAliasDeclaration') {
       if (declaration.id?.type === 'Identifier') {
         exports.push({ exportString: declaration.id.name });
       }
@@ -152,6 +162,7 @@ function initialLedgerEntryFor(sourceFile: string): UsageLedgerEntry {
 }
 
 export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => {
+  // noinspection JSUnusedLocalSymbols
   const descent = (path: string) => true;
   const allFilesInProject = walk(projectDirectory, descent).filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && !file.endsWith('.d.ts'));
 

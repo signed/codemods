@@ -92,4 +92,16 @@ export const two = 2`))
     expect(exportIn(`export enum One { one, two}`))
       .toStrictEqual<Export>({ exportString: 'One' });
   });
+  test('extract type exports', () => {
+    expect(exportIn(`export type One = string`))
+      .toStrictEqual<Export>({ exportString: 'One' });
+  });
+  test('extract re export', () => {
+    expect(exportIn(`export { One } from '../sample'`))
+      .toStrictEqual<Export>({ exportString: 'One' });
+  });
+  test('extract renamed re export', () => {
+    expect(exportIn(`export { One as Two } from '../sample'`))
+      .toStrictEqual<Export>({ exportString: 'Two' });
+  });
 });
