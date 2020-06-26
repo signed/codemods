@@ -32,7 +32,7 @@ const walk = (
 const fileExtensionFrom = (path: string) => extname(path).slice(1);
 
 export type Import = {
-  importString: string;
+  importString: ImportString;
   imported: string[] | 'all-exports';
 }
 
@@ -57,7 +57,7 @@ export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => 
 
     exp.node.specifiers.forEach(spec => {
       exports.push({ exportString: spec.exported.name });
-    })
+    });
 
     if (declaration?.type === 'VariableDeclaration') {
       declaration.declarations.forEach((blub) => {
@@ -144,6 +144,7 @@ export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => 
   return imports;
 };
 
+type ImportString = string;
 type ExportName = string;
 type PathToSourceFile = string;
 type UsageLedgerEntry = {
@@ -151,6 +152,7 @@ type UsageLedgerEntry = {
   usages: PathToSourceFile[];
   exports: {
     declared: ExportName[] | 'not-recorded',
+    starReExports: PathToSourceFile[]
     usages: Map<ExportName | 'all-exports', PathToSourceFile[]>
   }
 }
@@ -161,6 +163,7 @@ function initialLedgerEntryFor(sourceFile: string): UsageLedgerEntry {
     usages: [],
     exports: {
       declared: 'not-recorded',
+      starReExports: [],
       usages: new Map()
     }
   };
@@ -219,6 +222,7 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
           entry.exports.usages.set('all-exports', usageEntry);
         }
         usageEntry.push(sourceFile);
+        usageLedger.get(sourceFile)!.exports.starReExports.push(resolvedImport.pathToSourceFile);
       } else {
         resolvedImport.imported.forEach(it => {
           let usageEntry = entry!.exports.usages.get(it);
@@ -245,7 +249,19 @@ export const probeForDeadCodeIn = (projectDirectory: string): UnusedModule[] => 
         if (usage === 'all-exports') {
           return;
         }
-        if (!exports.declared.includes(usage)) {
+
+        // todo: drill down until there are no more stare re exports
+        const reExports = exports.starReExports
+          .map((path) => usageLedger.get(path)!.exports.declared)
+          .reduce<ExportName[]>((acc, cur) => {
+            if (cur === 'not-recorded') {
+              throw new Error('');
+            }
+            return ([...acc, ...cur]);
+          }, []);
+
+        if (!exports.declared.includes(usage) && !reExports.includes(usage)) {
+
           throw new Error(`a file is importing ${usage} from ${sourceFile} but no export was extracted`);
         }
       });
