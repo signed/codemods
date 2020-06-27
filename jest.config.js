@@ -1,5 +1,6 @@
 module.exports = {
     verbose: false,
+    setupFilesAfterEnv: ["jest-extended"],
     roots: [
         "<rootDir>/src"
     ],

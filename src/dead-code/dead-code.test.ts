@@ -6,9 +6,19 @@ import { Export, extractExportsFrom, extractImportsFrom, Import, probeForDeadCod
 const defaultExportsSamples = (file: string = '') => resolve(__dirname, `../../sample/default-exports/${file}`);
 
 test('identify the unused modules in the default exports sample ', () => {
-  const result = probeForDeadCodeIn(defaultExportsSamples()).modules;
-  expect(result).toHaveLength(1);
-  expect(result[0].path).toContain('sample/default-exports/consumer.ts');
+  const unused = probeForDeadCodeIn(defaultExportsSamples());
+  const unusedModules = unused.modules;
+  expect(unusedModules).toHaveLength(1);
+  expect(unusedModules[0].path).toInclude('sample/default-exports/consumer.ts');
+
+  const unusedExports = unused.exports;
+  expect(unusedExports).toHaveLength(3);
+  expect(unusedExports[0].name).toEqual('someFunction')
+  expect(unusedExports[0].path).toEndWith('sample/default-exports/default-export-function.ts')
+  expect(unusedExports[1].name).toEqual('someFunction')
+  expect(unusedExports[1].path).toEndWith('sample/default-exports/default-export-object-literal.ts')
+  expect(unusedExports[2].name).toEqual('constantString')
+  expect(unusedExports[2].path).toEndWith('sample/default-exports/default-export-string-literal.ts')
 });
 
 const importIn = (source: string) => {
