@@ -4,6 +4,7 @@ import { apiForTypescript } from '../shared/utils';
 import { Export, extractExportsFrom, extractImportsFrom, Import, probeForDeadCodeIn } from './dead-code';
 
 const defaultExportsSamples = (file: string = '') => resolve(__dirname, `../../sample/default-exports/${file}`);
+const usedInSameFile = () => resolve(__dirname, `../../sample/dead-code/`);
 
 test('identify the unused modules in the default exports sample ', () => {
   const unused = probeForDeadCodeIn(defaultExportsSamples());
@@ -19,6 +20,14 @@ test('identify the unused modules in the default exports sample ', () => {
   expect(unusedExports[1].path).toEndWith('sample/default-exports/default-export-object-literal.ts')
   expect(unusedExports[2].name).toEqual('constantString')
   expect(unusedExports[2].path).toEndWith('sample/default-exports/default-export-string-literal.ts')
+});
+
+test('do not report not imported exports if they are used in the same file', () => {
+  const unused = probeForDeadCodeIn(usedInSameFile());
+  const unusedExports = unused.exports;
+  expect(unusedExports).toHaveLength(1);
+  const unusedExport = unusedExports[0];
+  expect(unusedExport.name).toEqual('unused')
 });
 
 const importIn = (source: string) => {

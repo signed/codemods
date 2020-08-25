@@ -163,6 +163,7 @@ type UsageLedgerEntry = {
   usages: PathToSourceFile[];
   exports: {
     declared: ExportName[] | 'not-recorded',
+    referencedLocally: ExportName[] | 'not-recorded',
     starReExports: PathToSourceFile[]
     usages: Map<ExportName | 'all-exports', PathToSourceFile[]>
   }
@@ -174,6 +175,7 @@ function initialLedgerEntryFor(sourceFile: string): UsageLedgerEntry {
     usages: [],
     exports: {
       declared: 'not-recorded',
+      referencedLocally: 'not-recorded',
       starReExports: [],
       usages: new Map()
     }
@@ -245,7 +247,16 @@ export const probeForDeadCodeIn = (projectDirectory: string): Unused => {
         });
       }
     });
-    usageLedger.get(sourceFile)!.exports.declared = extractExportsFrom(source, j).map(exp => exp.exportString);
+    const declaredExports = extractExportsFrom(source, j).map(exp => exp.exportString);
+    const referencedLocally = declaredExports.filter(exportName => j(source).find(j.CallExpression, {
+      callee: {
+        type: 'Identifier',
+        name: exportName
+      }
+    }).length > 0);
+    const exports = usageLedger.get(sourceFile)!.exports;
+    exports.declared = declaredExports;
+    exports.referencedLocally = referencedLocally;
   });
 
   Array.from(usageLedger.entries())
@@ -307,16 +318,18 @@ export const probeForDeadCodeIn = (projectDirectory: string): Unused => {
       if (exports.usages.has('all-exports')) {
         throw new Error('star import, really...');
       }
-      declared.forEach(exp => {
-        const usages = exports.usages.get(exp) ?? [];
-        if (usages.filter(tests).filter(storybook).length === 0) {
-          unusedExports.push({
-            path: sourceFile,
-            name: exp,
-            dependents: [...usages]
-          });
-        }
-      });
+      declared
+        .filter(declaredExport => !exports.referencedLocally.includes(declaredExport))
+        .forEach(exp => {
+          const usages = exports.usages.get(exp) ?? [];
+          if (usages.filter(tests).filter(storybook).length === 0) {
+            unusedExports.push({
+              path: sourceFile,
+              name: exp,
+              dependents: [...usages]
+            });
+          }
+        });
     });
 
   return { modules, exports: unusedExports };
