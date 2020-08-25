@@ -254,9 +254,9 @@ export const probeForDeadCodeIn = (projectDirectory: string): Unused => {
         name: exportName
       }
     }).length > 0);
-    const exports = usageLedger.get(sourceFile)!.exports;
-    exports.declared = declaredExports;
-    exports.referencedLocally = referencedLocally;
+    const recordedExports = usageLedger.get(sourceFile)!.exports;
+    recordedExports.declared = declaredExports;
+    recordedExports.referencedLocally = referencedLocally;
   });
 
   Array.from(usageLedger.entries())
