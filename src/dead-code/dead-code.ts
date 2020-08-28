@@ -248,12 +248,20 @@ export const probeForDeadCodeIn = (projectDirectory: string): Unused => {
       }
     });
     const declaredExports = extractExportsFrom(source, j).map(exp => exp.exportString);
-    const referencedLocally = declaredExports.filter(exportName => j(source).find(j.CallExpression, {
-      callee: {
+    const ast = j(source);
+    const referencedLocally = declaredExports.filter(exportName => {
+      const calledAsAFunction = ast.find(j.CallExpression, {
+        callee: {
+          type: 'Identifier',
+          name: exportName
+        }
+      }).length > 0;
+      const reference = ast.find(j.Identifier, {
         type: 'Identifier',
         name: exportName
-      }
-    }).length > 0);
+      });
+      return calledAsAFunction ;
+    });
     const recordedExports = usageLedger.get(sourceFile)!.exports;
     recordedExports.declared = declaredExports;
     recordedExports.referencedLocally = referencedLocally;

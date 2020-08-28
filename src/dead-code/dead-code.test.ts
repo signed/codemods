@@ -22,7 +22,7 @@ test('identify the unused modules in the default exports sample ', () => {
   expect(unusedExports[2].path).toEndWith('sample/default-exports/default-export-string-literal.ts')
 });
 
-test('do not report not imported exports if they are used in the same file', () => {
+test.skip('do not report not imported exports if they are used in the same file', () => {
   const unused = probeForDeadCodeIn(usedInSameFile());
   const unusedExports = unused.exports;
   expect(unusedExports).toHaveLength(1);
