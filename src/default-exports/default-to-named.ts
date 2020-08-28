@@ -1,5 +1,5 @@
 import * as K from 'ast-types/gen/kinds';
-import { API } from 'jscodeshift/src/core';
+import { API } from 'jscodeshift';
 import { dirname, resolve } from 'path';
 import { replaceWithNamedExport } from './default-to-named-export';
 import { DefaultFilesystem, Filesystem } from '../shared/filesystem';
