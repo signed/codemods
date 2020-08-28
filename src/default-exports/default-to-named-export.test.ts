@@ -1,5 +1,5 @@
 import { DoNotTransform } from '../shared/jscodeshift-constants';
-import { transform } from './default-to-named-export';
+import { transform } from './default-to-named-export';
 import { apiForTypescript } from '../shared/utils';
 import 'jest-extended';
 
@@ -27,7 +27,7 @@ export default 'banana';`;
 
   test('derive export name from file name', () => {
     path = 'strip/this/out/this-is-the-file.ts';
-    expect(transformedDefaultExport(`export default 'banana';`)).toStartWith('export const ThisIsTheFile =')
+    expect(transformedDefaultExport(`export default 'banana';`)).toStartWith('export const ThisIsTheFile =');
   });
 
   describe('expressions', () => {
@@ -50,7 +50,7 @@ export const ExportName = call();`;
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
     test('do not produce an export with an identifier that is already exported', () => {
-      path = 'the-class.ts'
+      path = 'the-class.ts';
       const input = `export class TheClass {}
 export default new TheClass()`;
       const expected = `export class TheClass {}
@@ -89,14 +89,14 @@ export const theClassSingleton = new TheClass();`;
   describe('identifiers', () => {
     test('already exported function', () => {
       const input = `export const aFunction = () => {}
-export default aFunction`
-      const expected = `export const aFunction = () => {}`
+export default aFunction`;
+      const expected = `export const aFunction = () => {}`;
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
     test('not exported function', () => {
       const input = `const aFunction = () => {}
-export default aFunction`
-      const expected = `export const aFunction = () => {};`
+export default aFunction`;
+      const expected = `export const aFunction = () => {};`;
       expect(transformedDefaultExport(input)).toEqual(expected);
     });
   });
