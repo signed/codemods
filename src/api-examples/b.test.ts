@@ -1,6 +1,6 @@
 import { apiForTypescript } from '../shared/utils';
 
-test('should ', () => {
+test('rename variables ', () => {
   const api = apiForTypescript();
   const source = `
 export const one = 'one global'

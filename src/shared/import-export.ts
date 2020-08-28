@@ -1,4 +1,4 @@
-import { ExportNamedDeclaration, Identifier, VariableDeclaration } from 'ast-types/gen/nodes';
+import { ExportNamedDeclaration, Identifier, VariableDeclaration, ClassDeclaration, TSInterfaceDeclaration } from 'ast-types/gen/nodes';
 import { ASTPath } from 'jscodeshift';
 import { ParsedSource } from './parsed-source';
 
@@ -16,29 +16,53 @@ const identifiesVariableDeclaration = (identifier: ASTPath<Identifier>): false |
 };
 
 const identifiesAnExport = (identifier: ASTPath<Identifier>): false | ExportNamedDeclaration => {
-  const variableDeclaration = identifiesVariableDeclaration(identifier);
-  if (!variableDeclaration) {
-    return false;
-  }
-  const exportNamedDeclaration = variableDeclaration.parent;
-  const match = exportNamedDeclaration?.node?.type === 'ExportNamedDeclaration';
+  let current = identifier.parent;
+  do {
+
+    const match = current?.node?.type === 'ExportNamedDeclaration';
+    if (match) {
+      return current;
+    }
+    current = current.parent
+  }while (current)
+  return false;
+};
+
+const identifiesAnClassDeclaration = (identifier: ASTPath<Identifier>): false | ClassDeclaration => {
+  const classDeclaration = identifier.parent;
+  const match = classDeclaration?.node?.type === 'ClassDeclaration';
   if (match) {
-    return exportNamedDeclaration;
+    return classDeclaration;
+  }
+  return false;
+};
+
+const identifiesTSInterfaceDeclaration = (identifier: ASTPath<Identifier>): false | TSInterfaceDeclaration => {
+  const tsInterfaceDeclaration = identifier.parent;
+  const match = tsInterfaceDeclaration?.node?.type === 'TSInterfaceDeclaration';
+  if (match) {
+    return tsInterfaceDeclaration;
   }
   return false;
 };
 
 export const namedExportHasLocalUsage = (exportName: string, parsedSource: ParsedSource) => {
-  const referencesToASymbolNamedOne = parsedSource.ast.find(parsedSource.j.Identifier, { name: exportName });
-  return referencesToASymbolNamedOne
+  const identifiersReferencingExportName = parsedSource.ast.find(parsedSource.j.Identifier, { name: exportName });
+  return identifiersReferencingExportName
     .filter(path => !identifiesVariableDeclaration(path))
+    .filter(path => !identifiesAnClassDeclaration(path))
+    .filter(path => !identifiesTSInterfaceDeclaration(path))
     .some(path => {
       const name = path.value.name;
       const scope = path.scope.lookup(name);
+      if (scope === null) {
+        // there is no scope there can be no shadowed variables
+        // todo pass in the list of know exports to check against
+        return true;
+      }
       const bindings = scope.getBindings()[name];
       return bindings.some((binding: any) => {
-        const banana = identifiesAnExport(binding);
-        return !!banana;
+        return !!identifiesAnExport(binding);
       });
     });
 };

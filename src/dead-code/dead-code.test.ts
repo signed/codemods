@@ -13,13 +13,11 @@ test('identify the unused modules in the default exports sample ', () => {
   expect(unusedModules[0].path).toInclude('sample/default-exports/consumer.ts');
 
   const unusedExports = unused.exports;
-  expect(unusedExports).toHaveLength(3);
+  expect(unusedExports).toHaveLength(2);
   expect(unusedExports[0].name).toEqual('someFunction')
-  expect(unusedExports[0].path).toEndWith('sample/default-exports/default-export-function.ts')
-  expect(unusedExports[1].name).toEqual('someFunction')
-  expect(unusedExports[1].path).toEndWith('sample/default-exports/default-export-object-literal.ts')
-  expect(unusedExports[2].name).toEqual('constantString')
-  expect(unusedExports[2].path).toEndWith('sample/default-exports/default-export-string-literal.ts')
+  expect(unusedExports[0].path).toEndWith('sample/default-exports/default-export-object-literal.ts')
+  expect(unusedExports[1].name).toEqual('constantString')
+  expect(unusedExports[1].path).toEndWith('sample/default-exports/default-export-string-literal.ts')
 });
 
 test.skip('do not report not imported exports if they are used in the same file', () => {

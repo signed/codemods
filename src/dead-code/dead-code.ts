@@ -2,6 +2,8 @@ import { readdirSync, statSync } from 'fs';
 import jscodeshift, { JSCodeshift } from 'jscodeshift';
 import { dirname, extname, join, resolve } from 'path';
 import { DefaultFilesystem } from '../shared/filesystem';
+import { namedExportHasLocalUsage } from '../shared/import-export';
+import { DefaultParsedSource } from '../shared/parsed-source';
 import { isImportToSourceFileInProject } from '../shared/shared';
 
 export interface UnusedModule {
@@ -248,19 +250,9 @@ export const probeForDeadCodeIn = (projectDirectory: string): Unused => {
       }
     });
     const declaredExports = extractExportsFrom(source, j).map(exp => exp.exportString);
-    const ast = j(source);
+    const parsedSource = new DefaultParsedSource(source, j);
     const referencedLocally = declaredExports.filter(exportName => {
-      const calledAsAFunction = ast.find(j.CallExpression, {
-        callee: {
-          type: 'Identifier',
-          name: exportName
-        }
-      }).length > 0;
-      const reference = ast.find(j.Identifier, {
-        type: 'Identifier',
-        name: exportName
-      });
-      return calledAsAFunction ;
+      return namedExportHasLocalUsage(exportName, parsedSource);
     });
     const recordedExports = usageLedger.get(sourceFile)!.exports;
     recordedExports.declared = declaredExports;
