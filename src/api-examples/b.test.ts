@@ -1,7 +1,6 @@
-import { apiForTypescript } from '../shared/utils'
+import { parse } from './helpers'
 
-test('rename variables ', () => {
-  const api = apiForTypescript()
+test('rename variables', () => {
   const source = `
 export const one = 'one global'
 {
@@ -16,10 +15,9 @@ function someFunction(){
   const one = 45
   console.log(one)
 }`
-
-  const j = api.j
-  const ast = j(source)
-
+  const parsed = parse(source)
+  const ast = parsed.ast
+  expect(ast.find(parsed.j.Identifier, {name: 'one'})).toHaveLength(5)
   const actual = ast.findVariableDeclarators('one').renameTo('two')
-  expect(actual).not.toContain('one')
+  expect(actual.find(parsed.j.Identifier, {name: 'one'})).toHaveLength(0)
 })
