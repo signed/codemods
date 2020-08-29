@@ -70,6 +70,16 @@ If you are allowed to remove them, this should help.
   - ast-types wraps every AST node into a path object
   - paths contain meta-information and helper methods to process AST nodes
   - defines a couple of builder methods, to make creating AST nodes a bit simpler and "safer"
+  
+## [astexplorer](https://astexplorer.net/)
+
+To get a typescript AST like you get with jscodeshift
+
+1. change from `acorn` to `@babel/parser`
+1. click ⚙️ to open the `@babel/parser` settings
+1. uncheck `flow`
+1. check `typescript`
+
 
 # scope
 
