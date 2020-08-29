@@ -1,5 +1,5 @@
 export const someFunction = () => {
-  return 'wohooo';
+  return 'wohooo'
 }
 
-export default someFunction;
+export default someFunction

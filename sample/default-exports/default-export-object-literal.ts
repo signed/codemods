@@ -1,5 +1,4 @@
 /*default-export-object-literal.ts*/
-export default { fruit: 'orange'}
+export default { fruit: 'orange' }
 
-export const someFunction = () => {
-};
+export const someFunction = () => {}

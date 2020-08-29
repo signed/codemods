@@ -1,7 +1,7 @@
-import { apiForTypescript } from '../shared/utils';
+import { apiForTypescript } from '../shared/utils'
 
 test('rename variables ', () => {
-  const api = apiForTypescript();
+  const api = apiForTypescript()
   const source = `
 export const one = 'one global'
 {
@@ -15,11 +15,11 @@ function anotherFunction(){
 function someFunction(){
   const one = 45
   console.log(one)
-}`;
+}`
 
-  const j = api.j;
-  const ast = j(source);
+  const j = api.j
+  const ast = j(source)
 
-  const actual = ast.findVariableDeclarators('one').renameTo('two');
-  expect(actual).not.toContain('one');
-});
+  const actual = ast.findVariableDeclarators('one').renameTo('two')
+  expect(actual).not.toContain('one')
+})

@@ -1,68 +1,73 @@
-import { ExportNamedDeclaration, Identifier, VariableDeclaration, ClassDeclaration, TSInterfaceDeclaration } from 'ast-types/gen/nodes';
-import { ASTPath } from 'jscodeshift';
-import { ParsedSource } from './parsed-source';
+import {
+  ExportNamedDeclaration,
+  Identifier,
+  VariableDeclaration,
+  ClassDeclaration,
+  TSInterfaceDeclaration,
+} from 'ast-types/gen/nodes'
+import { ASTPath } from 'jscodeshift'
+import { ParsedSource } from './parsed-source'
 
 const identifiesVariableDeclaration = (identifier: ASTPath<Identifier>): false | ASTPath<VariableDeclaration> => {
-  const variableDeclarator = identifier.parent;
+  const variableDeclarator = identifier.parent
   if (variableDeclarator?.node?.type !== 'VariableDeclarator') {
-    return false;
+    return false
   }
-  const variableDeclaration = variableDeclarator.parent;
-  const match = variableDeclaration?.node?.type === 'VariableDeclaration';
+  const variableDeclaration = variableDeclarator.parent
+  const match = variableDeclaration?.node?.type === 'VariableDeclaration'
   if (match) {
-    return variableDeclaration;
+    return variableDeclaration
   }
-  return false;
-};
+  return false
+}
 
 const identifiesAnExport = (identifier: ASTPath<Identifier>): false | ExportNamedDeclaration => {
-  let current = identifier.parent;
+  let current = identifier.parent
   do {
-
-    const match = current?.node?.type === 'ExportNamedDeclaration';
+    const match = current?.node?.type === 'ExportNamedDeclaration'
     if (match) {
-      return current;
+      return current
     }
     current = current.parent
-  }while (current)
-  return false;
-};
+  } while (current)
+  return false
+}
 
 const identifiesAnClassDeclaration = (identifier: ASTPath<Identifier>): false | ClassDeclaration => {
-  const classDeclaration = identifier.parent;
-  const match = classDeclaration?.node?.type === 'ClassDeclaration';
+  const classDeclaration = identifier.parent
+  const match = classDeclaration?.node?.type === 'ClassDeclaration'
   if (match) {
-    return classDeclaration;
+    return classDeclaration
   }
-  return false;
-};
+  return false
+}
 
 const identifiesTSInterfaceDeclaration = (identifier: ASTPath<Identifier>): false | TSInterfaceDeclaration => {
-  const tsInterfaceDeclaration = identifier.parent;
-  const match = tsInterfaceDeclaration?.node?.type === 'TSInterfaceDeclaration';
+  const tsInterfaceDeclaration = identifier.parent
+  const match = tsInterfaceDeclaration?.node?.type === 'TSInterfaceDeclaration'
   if (match) {
-    return tsInterfaceDeclaration;
+    return tsInterfaceDeclaration
   }
-  return false;
-};
+  return false
+}
 
 export const namedExportHasLocalUsage = (exportName: string, parsedSource: ParsedSource) => {
-  const identifiersReferencingExportName = parsedSource.ast.find(parsedSource.j.Identifier, { name: exportName });
+  const identifiersReferencingExportName = parsedSource.ast.find(parsedSource.j.Identifier, { name: exportName })
   return identifiersReferencingExportName
-    .filter(path => !identifiesVariableDeclaration(path))
-    .filter(path => !identifiesAnClassDeclaration(path))
-    .filter(path => !identifiesTSInterfaceDeclaration(path))
-    .some(path => {
-      const name = path.value.name;
-      const scope = path.scope.lookup(name);
+    .filter((path) => !identifiesVariableDeclaration(path))
+    .filter((path) => !identifiesAnClassDeclaration(path))
+    .filter((path) => !identifiesTSInterfaceDeclaration(path))
+    .some((path) => {
+      const name = path.value.name
+      const scope = path.scope.lookup(name)
       if (scope === null) {
         // there is no scope there can be no shadowed variables
         // todo pass in the list of know exports to check against
-        return true;
+        return true
       }
-      const bindings = scope.getBindings()[name];
+      const bindings = scope.getBindings()[name]
       return bindings.some((binding: any) => {
-        return !!identifiesAnExport(binding);
-      });
-    });
-};
+        return !!identifiesAnExport(binding)
+      })
+    })
+}
