@@ -1,6 +1,7 @@
 import { API, FileInfo, Options } from 'jscodeshift/src/core'
 import { extractImportString } from '../shared/imports'
 import { DoNotTransform } from '../shared/jscodeshift-constants'
+import { fileExtensionFrom } from '../shared/paths'
 
 export const parser: string = 'ts'
 
@@ -11,7 +12,7 @@ export const transform = (file: FileInfo, api: API, options: Options) => {
   if (file.path.endsWith('.d.ts')) {
     return DoNotTransform
   }
-  const j = api.jscodeshift
+  const j = api.jscodeshift.withParser(fileExtensionFrom(file.path))
   const root = j(file.source)
   const importsToUpdate = root.find(api.j.ImportDeclaration).filter(importDeclaration => {
     const importString = extractImportString(importDeclaration.value)
