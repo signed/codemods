@@ -1,9 +1,10 @@
 import { readdirSync, statSync } from 'fs'
 import jscodeshift, { JSCodeshift } from 'jscodeshift'
-import { dirname, extname, join, resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 import { DefaultFilesystem } from '../shared/filesystem'
 import { namedExportHasLocalUsage } from '../shared/import-export'
 import { DefaultParsedSource } from '../shared/parsed-source'
+import { fileExtensionFrom } from '../shared/paths'
 import { isImportToSourceFileInProject } from '../shared/shared'
 
 export interface UnusedModule {
@@ -37,8 +38,6 @@ const walk = (directory: string, descent: (path: string) => boolean, acc: string
   })
   return acc
 }
-
-const fileExtensionFrom = (path: string) => extname(path).slice(1)
 
 export type Import = {
   importString: ImportString
