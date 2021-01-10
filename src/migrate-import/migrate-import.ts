@@ -1,4 +1,5 @@
 import { API, FileInfo, Options } from 'jscodeshift/src/core'
+import { DoNotTransform } from '../shared/jscodeshift-constants'
 
 export const parser: string = 'ts'
 
@@ -6,6 +7,9 @@ export const parser: string = 'ts'
 export default (file: FileInfo, api: API, options: Options) => transform(file, api, options)
 
 export const transform = (file: FileInfo, api: API, options: Options) => {
+  if (file.path.endsWith('.d.ts')) {
+    return DoNotTransform
+  }
   const j = api.jscodeshift
   const root = j(file.source)
   root.find(api.j.ImportDeclaration, {
