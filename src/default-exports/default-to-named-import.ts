@@ -1,6 +1,6 @@
-import * as K from 'ast-types/gen/kinds'
 import * as N from 'ast-types/gen/nodes'
-import { API, ASTPath, FileInfo, Identifier, ImportDeclaration, Options, StringLiteral } from 'jscodeshift/src/core'
+import { API, ASTPath, FileInfo, Identifier, Options } from 'jscodeshift/src/core'
+import { extractImportString } from '../shared/imports'
 import { defaultExportNameResolver, ExportNameResolver } from './default-to-named'
 import { DoNotTransform } from '../shared/jscodeshift-constants'
 import { isImportToSourceFileInProject } from '../shared/shared'
@@ -51,23 +51,4 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
       .forEach((importSpecifier) => changeImportToAdjustForRemovedDefaultExport(importDeclaration, importSpecifier))
   })
   return root.toSource({ quote: 'single' })
-}
-
-const extractImportString = (importDeclaration: ImportDeclaration): string => {
-  let source = importDeclaration.source
-  if (isStringLiteral(source)) {
-    return source.value
-  }
-  if (isLiteral(source) && typeof source.value === 'string') {
-    return source.value
-  }
-  throw new Error(`Unable to extract import string from import declaration of source type ${source.type}`)
-}
-
-const isStringLiteral = (toCheck: K.LiteralKind): toCheck is K.StringLiteralKind => {
-  return toCheck.type === 'StringLiteral'
-}
-
-const isLiteral = (toCheck: K.LiteralKind): toCheck is N.Literal => {
-  return toCheck.type === 'Literal'
 }
