@@ -12,9 +12,15 @@ describe('replace import source', () => {
     return transform(fileInfo, apiForTypescript(), noOptions)
   }
 
-  test('with replacement', () => {
+  test('exact match', () => {
     const input = `import { sample } from '@example/package-old'`
     const expected = `import { sample } from '@example/package-new'`
+    expect(replaceImport(input, '@example/package-old', '@example/package-new')).toEqual(expected)
+  })
+
+  test('prefix match preserves not matching suffix', () => {
+    const input = `import { sample } from '@example/package-old/deep'`
+    const expected = `import { sample } from '@example/package-new/deep'`
     expect(replaceImport(input, '@example/package-old', '@example/package-new')).toEqual(expected)
   })
 })

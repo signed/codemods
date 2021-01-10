@@ -1,4 +1,5 @@
 import { API, FileInfo, Options } from 'jscodeshift/src/core'
+import { extractImportString } from '../shared/imports'
 import { DoNotTransform } from '../shared/jscodeshift-constants'
 
 export const parser: string = 'ts'
@@ -12,16 +13,17 @@ export const transform = (file: FileInfo, api: API, options: Options) => {
   }
   const j = api.jscodeshift
   const root = j(file.source)
-  root.find(api.j.ImportDeclaration, {
-    source: {
-      type: 'StringLiteral',
-      value: options.toReplace,
-    },
-  }).forEach(importPath => {
-    const importDeclaration = importPath.value
-    const source = importDeclaration.source
+  const importsToUpdate = root.find(api.j.ImportDeclaration).filter(importDeclaration => {
+    const importString = extractImportString(importDeclaration.value)
+    return importString.startsWith(options.toReplace)
+  })
+  if (importsToUpdate.length === 0) {
+    return DoNotTransform
+  }
+  importsToUpdate.forEach(importPath => {
+    const source = importPath.value.source
     if (source.type === 'StringLiteral') {
-      source.value = options.replacement
+      source.value = source.value.replace(options.toReplace, options.replacement)
     }
   })
   return root.toSource({ quote: 'single' })
