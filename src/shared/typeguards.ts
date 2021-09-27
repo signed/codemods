@@ -1,10 +1,10 @@
 import * as K from 'ast-types/gen/kinds'
-import * as N from 'ast-types/gen/nodes'
+import { Literal } from 'jscodeshift'
 
 export const isStringLiteral = (toCheck: K.LiteralKind): toCheck is K.StringLiteralKind => {
   return toCheck.type === 'StringLiteral'
 }
 
-export const isLiteral = (toCheck: K.LiteralKind): toCheck is N.Literal => {
+export const isLiteral = (toCheck: K.LiteralKind): toCheck is Literal => {
   return toCheck.type === 'Literal'
 }

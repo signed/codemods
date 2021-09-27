@@ -1,5 +1,4 @@
-import * as N from 'ast-types/gen/nodes'
-import { API, ASTPath, FileInfo, Identifier, Options } from 'jscodeshift/src/core'
+import { API, ASTPath, FileInfo, Identifier, Options, ImportDeclaration, ImportSpecifier, ImportDefaultSpecifier } from 'jscodeshift'
 import { extractImportString } from '../shared/imports'
 import { defaultExportNameResolver, ExportNameResolver } from './default-to-named'
 import { DoNotTransform } from '../shared/jscodeshift-constants'
@@ -16,8 +15,8 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
   const root = api.j(file.source)
 
   const changeImportToAdjustForRemovedDefaultExport = (
-    renamedDefaultImport: ASTPath<N.ImportDeclaration>,
-    importSpecifier: ASTPath<N.ImportSpecifier> | ASTPath<N.ImportDefaultSpecifier>,
+    renamedDefaultImport: ASTPath<ImportDeclaration>,
+    importSpecifier: ASTPath<ImportSpecifier> | ASTPath<ImportDefaultSpecifier>,
   ) => {
     const importString = extractImportString(renamedDefaultImport.node)
     if (!isImportToSourceFileInProject(importString)) {

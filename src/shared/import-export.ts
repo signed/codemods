@@ -1,11 +1,10 @@
 import {
-  ExportNamedDeclaration,
+  ASTPath, ExportNamedDeclaration,
   Identifier,
   VariableDeclaration,
   ClassDeclaration,
   TSInterfaceDeclaration,
-} from 'ast-types/gen/nodes'
-import { ASTPath } from 'jscodeshift'
+} from 'jscodeshift'
 import { ParsedSource } from './parsed-source'
 
 const identifiesVariableDeclaration = (identifier: ASTPath<Identifier>): false | ASTPath<VariableDeclaration> => {

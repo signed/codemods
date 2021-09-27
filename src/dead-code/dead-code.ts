@@ -63,7 +63,8 @@ export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => 
   root.find(j.ExportNamedDeclaration).forEach((exp) => {
     const declaration = exp.node.declaration
 
-    exp.node.specifiers.forEach((spec) => {
+    const specifiers = exp.node.specifiers ?? []
+    specifiers.forEach((spec) => {
       exports.push({ exportString: spec.exported.name })
     })
 
