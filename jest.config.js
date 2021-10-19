@@ -1,6 +1,6 @@
 module.exports = {
   verbose: false,
-  setupFilesAfterEnv: ['jest-extended'],
+  setupFilesAfterEnv: ['jest-extended/all'],
   roots: ['<rootDir>/src'],
   testMatch: ['<rootDir>/src/**/*.{spec,test,tests}.{ts,tsx}'],
   transform: {
