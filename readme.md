@@ -94,3 +94,10 @@ To get a typescript AST like you get with jscodeshift
 # remove console.log calls
 
 # https://xkcd.com/1205/
+
+
+# Other jscodeshift codemods on the web
+- [gist to remove unused imports](https://gist.github.com/nemtsov/8f5a6a78268839abaca78ad1fbe8368c)
+
+# Other tools to write and run codemodes
+- https://github.com/coderaiser/putout
