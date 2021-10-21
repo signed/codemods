@@ -18,7 +18,6 @@ import { one } from '@example/package'
   })
 
   test('two value imports from the same package', () => {
-    console.log('asfasfd')
     const input = `
 import { one } from '@example/package'
 import { two } from '@example/package'
@@ -35,6 +34,18 @@ import { two } from '@example/package'
 `
     const expected = `
 import type { one } from '@example/package'
+import { two } from '@example/package'
+`.trim()
+    expect(mergeImports(input)).toEqual(expected)
+  })
+
+  test('ignore star imports to keep tree shaking working', () => {
+    const input = `
+import * as Package from '@example/package'
+import { two } from '@example/package'
+`
+    const expected = `
+import * as Package from '@example/package'
 import { two } from '@example/package'
 `.trim()
     expect(mergeImports(input)).toEqual(expected)

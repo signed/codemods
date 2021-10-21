@@ -8,11 +8,40 @@ export const parser: string = 'ts'
 // This function is called for each file you targeted with the CLI
 export default (file: FileInfo, api: API, _options: Options) => transform(file, api, _options)
 
+export const transform = (file: FileInfo, api: API, _options: Options) => {
+  if (file.path.endsWith('.d.ts')) {
+    return DoNotTransform
+  }
+  const j = api.jscodeshift.withParser(fileExtensionFrom(file.path))
+  const root = j(file.source)
+  const imports = new Imports()
+  root.find(api.j.ImportDeclaration).forEach((importDeclaration) => {
+    imports.add(importDeclaration)
+  })
+  imports.importTypes().forEach((allValueImports) =>
+    allValueImports.forEach((value) => {
+      if (value.length < 2) {
+        return
+      }
+      const [first, ...rest] = value
+      const specifiers = first.value.specifiers ?? []
+      rest.forEach((duplicatedImport) => {
+        specifiers.push(...(duplicatedImport.value.specifiers ?? []))
+        duplicatedImport.replace()
+      })
+    }),
+  )
+  return root.toSource()
+}
+
 class Imports {
   readonly valueImports = new Map<string, ASTPath<ImportDeclaration>[]>()
   readonly typeImports = new Map<string, ASTPath<ImportDeclaration>[]>()
 
   add(importDeclaration: ASTPath<ImportDeclaration>) {
+    if (containsNamespaceSpecifier(importDeclaration)) {
+      return
+    }
     const storage = this.pickStorageFor(importDeclaration.value.importKind)
     const importString = extractImportString(importDeclaration.value)
     const map = storage
@@ -40,28 +69,5 @@ class Imports {
   }
 }
 
-export const transform = (file: FileInfo, api: API, _options: Options) => {
-  if (file.path.endsWith('.d.ts')) {
-    return DoNotTransform
-  }
-  const j = api.jscodeshift.withParser(fileExtensionFrom(file.path))
-  const root = j(file.source)
-  const imports = new Imports()
-  root.find(api.j.ImportDeclaration).forEach((importDeclaration) => {
-    imports.add(importDeclaration)
-  })
-  imports.importTypes().forEach((allValueImports) =>
-    allValueImports.forEach((value) => {
-      if (value.length < 2) {
-        return
-      }
-      const [first, ...rest] = value
-      const specifiers = first.value.specifiers ?? []
-      rest.forEach((duplicatedImport) => {
-        specifiers.push(...(duplicatedImport.value.specifiers ?? []))
-        duplicatedImport.replace()
-      })
-    }),
-  )
-  return root.toSource()
-}
+const containsNamespaceSpecifier = (importDeclaration: ASTPath<ImportDeclaration>) =>
+  importDeclaration.value.specifiers?.some((specifier) => specifier.type === 'ImportNamespaceSpecifier')
