@@ -2,11 +2,14 @@
   "name": "codemods",
   "private": true,
   "scripts": {
+    "comment": "workaround for https://github.com/facebook/jscodeshift/issues/424#issuecomment-888243971",
+    "codeshift": "node ./node_modules/.bin/jscodeshift",
     "start": "ts-node sample/default-exports/consumer.ts",
     "transform": "yarn transform:default-imports && yarn transform:default-exports",
-    "transform:copyright-headers": "jscodeshift --extensions=ts --transform src/remove-copyright-headers/remove-copyright-headers.ts sample/remove-copyright-headers/",
-    "transform:default-imports": "jscodeshift --extensions=ts --transform src/default-exports/default-to-named-import.ts sample/default-exports",
-    "transform:default-exports": "jscodeshift --extensions=ts --transform src/default-exports/default-to-named-export.ts sample/default-exports",
+    "transform:copyright-headers": "yarn codeshift --extensions=ts --transform src/remove-copyright-headers/remove-copyright-headers.ts sample/remove-copyright-headers/",
+    "transform:default-imports": "yarn codeshift --extensions=ts --transform src/default-exports/default-to-named-import.ts sample/default-exports",
+    "transform:default-exports": "yarn codeshift --extensions=ts --transform src/default-exports/default-to-named-export.ts sample/default-exports",
+    "transform:merge-imports": "yarn codeshift --extensions=ts --transform src/merge-imports/merge-imports.ts sample/merge-imports",
     "probe": "ts-node src/dead-code/dead-code-cli.ts sample/default-exports/",
     "test": "jest",
     "typecheck": "tsc --noEmit"
@@ -29,5 +32,9 @@
     "@types/node": "16.11.1",
     "change-case": "4.1.2",
     "execa": "5.1.1"
+  },
+  "volta": {
+    "node": "14.18.1",
+    "yarn": "1.22.17"
   }
 }
