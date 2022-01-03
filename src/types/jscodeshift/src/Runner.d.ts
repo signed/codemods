@@ -8,15 +8,15 @@ declare module 'jscodeshift/src/Runner' {
     print?: boolean
     babel?: boolean
     extensions?: string
-    ignorePattern?: string []
-    ignoreConfig?: string []
+    ignorePattern?: string[]
+    ignoreConfig?: string[]
     silent?: boolean
 
-    [key: string]: boolean | string | number | string []| void
+    [key: string]: boolean | string | number | string[] | void
   }
 
   export interface StatsCounter {
-    [key: string]: number | void;
+    [key: string]: number | void
   }
 
   export interface RunResult {
@@ -34,5 +34,5 @@ declare module 'jscodeshift/src/Runner' {
    * @param paths
    * @param options
    */
-  export function run(transformFile: string, paths: string[], options?: Options): void | RunResult;
+  export function run(transformFile: string, paths: string[], options?: Options): void | RunResult
 }

@@ -3,10 +3,10 @@ import { apiForTypescript } from '../shared/utils'
 import { transform } from './migrate-import'
 
 describe('replace import source', () => {
-  const replaceImport = (input: string, toReplace: string, replacement:string) => {
+  const replaceImport = (input: string, toReplace: string, replacement: string) => {
     const noOptions = {
       toReplace,
-      replacement
+      replacement,
     }
     const fileInfo = { source: input, path: 'source-file.ts' }
     return transform(fileInfo, apiForTypescript(), noOptions)

@@ -10,7 +10,7 @@ test('migrate import in project', async () => {
     replacement: 'beautiful',
   }
 
-  const result = await new Project(projectRoot).run({transformerPath, options, dry: true})
+  const result = await new Project(projectRoot).run({ transformerPath, options, dry: true })
   if (result === undefined) {
     throw new Error('expecting a result object')
   }

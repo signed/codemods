@@ -14,14 +14,14 @@ export const transform = (file: FileInfo, api: API, options: Options) => {
   }
   const j = api.jscodeshift.withParser(fileExtensionFrom(file.path))
   const root = j(file.source)
-  const importsToUpdate = root.find(api.j.ImportDeclaration).filter(importDeclaration => {
+  const importsToUpdate = root.find(api.j.ImportDeclaration).filter((importDeclaration) => {
     const importString = extractImportString(importDeclaration.value)
     return importString.startsWith(options.toReplace)
   })
   if (importsToUpdate.length === 0) {
     return DoNotTransform
   }
-  importsToUpdate.forEach(importPath => {
+  importsToUpdate.forEach((importPath) => {
     const source = importPath.value.source
     if (source.type === 'StringLiteral') {
       source.value = source.value.replace(options.toReplace, options.replacement)

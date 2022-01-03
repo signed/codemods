@@ -22,8 +22,7 @@ export interface Transformation {
 }
 
 export class Project {
-  constructor(private readonly projectRoot: string) {
-  }
+  constructor(private readonly projectRoot: string) {}
 
   run(transformation: Transformation) {
     const paths = this.packagePaths()
@@ -35,18 +34,18 @@ export class Project {
       verbose: 0,
       silent: true,
       runInBand: false,
-      ...transformation.options
+      ...transformation.options,
     }
     return runTransformer(transformation.transformerPath, paths, options)
   }
 
-  private packagePaths(): string [] {
+  private packagePaths(): string[] {
     if (fs.existsSync(path.resolve(this.projectRoot, 'lerna.json'))) {
       const process = execa.sync('yarn', ['--silent', 'lerna', 'list', '--json', '--loglevel=silent'], {
         cwd: this.projectRoot,
       })
       const packages: LernaListPackageDescriptor[] = JSON.parse(process.stdout)
-      return packages.map(project => project.location)
+      return packages.map((project) => project.location)
     }
     return [this.projectRoot]
   }

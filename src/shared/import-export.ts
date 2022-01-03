@@ -1,5 +1,6 @@
 import {
-  ASTPath, ExportNamedDeclaration,
+  ASTPath,
+  ExportNamedDeclaration,
   Identifier,
   VariableDeclaration,
   ClassDeclaration,

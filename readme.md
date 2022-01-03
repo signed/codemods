@@ -70,7 +70,7 @@ If you are allowed to remove them, this should help.
   - ast-types wraps every AST node into a path object
   - paths contain meta-information and helper methods to process AST nodes
   - defines a couple of builder methods, to make creating AST nodes a bit simpler and "safer"
-  
+
 ## [astexplorer](https://astexplorer.net/)
 
 To get a typescript AST like you get with jscodeshift
@@ -79,7 +79,6 @@ To get a typescript AST like you get with jscodeshift
 1. click ⚙️ to open the `@babel/parser` settings
 1. uncheck `flow`
 1. check `typescript`
-
 
 # scope
 
@@ -95,9 +94,10 @@ To get a typescript AST like you get with jscodeshift
 
 # https://xkcd.com/1205/
 
-
 # Other jscodeshift codemods on the web
+
 - [gist to remove unused imports](https://gist.github.com/nemtsov/8f5a6a78268839abaca78ad1fbe8368c)
 
 # Other tools to write and run codemodes
+
 - https://github.com/coderaiser/putout

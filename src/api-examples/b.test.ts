@@ -17,7 +17,7 @@ function someFunction(){
 }`
   const parsed = parse(source)
   const ast = parsed.ast
-  expect(ast.find(parsed.j.Identifier, {name: 'one'})).toHaveLength(5)
+  expect(ast.find(parsed.j.Identifier, { name: 'one' })).toHaveLength(5)
   const actual = ast.findVariableDeclarators('one').renameTo('two')
-  expect(actual.find(parsed.j.Identifier, {name: 'one'})).toHaveLength(0)
+  expect(actual.find(parsed.j.Identifier, { name: 'one' })).toHaveLength(0)
 })
