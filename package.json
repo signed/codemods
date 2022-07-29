@@ -10,6 +10,7 @@
     "transform:default-imports": "yarn codeshift --extensions=ts --transform src/default-exports/default-to-named-import.ts sample/default-exports",
     "transform:default-exports": "yarn codeshift --extensions=ts --transform src/default-exports/default-to-named-export.ts sample/default-exports",
     "transform:merge-imports": "yarn codeshift --extensions=ts --transform src/merge-imports/merge-imports.ts sample/merge-imports",
+    "transform:append-js-to-local-imports": "yarn codeshift --extensions=ts --transform src/append-js-to-local-imports/append-js-to-local-imports.ts sample/default-exports",
     "probe": "ts-node src/dead-code/dead-code-cli.ts sample/default-exports/",
     "test": "jest",
     "typecheck": "tsc --noEmit"

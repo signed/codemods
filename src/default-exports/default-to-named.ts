@@ -1,15 +1,10 @@
 import * as K from 'ast-types/gen/kinds'
 import { API } from 'jscodeshift'
-import { dirname, resolve } from 'path'
-import { replaceWithNamedExport } from './default-to-named-export'
 import { DefaultFilesystem, Filesystem } from '../shared/filesystem'
+import { Importer, pathToImportedSourceFile } from '../shared/paths'
+import { replaceWithNamedExport } from './default-to-named-export'
 
 export type ExportName = string
-export type Importer = { path: string; importString: string }
-
-/*
- if resolving imports becomes tedious have a look at https://github.com/dividab/tsconfig-paths
- */
 export type ExportNameResolver = (importer: Importer, api: API, filesystem?: Filesystem) => ExportName
 
 export const defaultExportNameResolver: ExportNameResolver = (
@@ -17,16 +12,7 @@ export const defaultExportNameResolver: ExportNameResolver = (
   api: API,
   filesystem: Filesystem = new DefaultFilesystem(),
 ): ExportName => {
-  const currentFileDirectory = dirname(resolve(importer.path))
-  const absoluteImportTarget = resolve(currentFileDirectory, importer.importString)
-  const pathToImportedFile = absoluteImportTarget + '.ts'
-  const pathToImportedIndexFile = resolve(absoluteImportTarget, 'index.ts')
-  const candidates = [pathToImportedFile, pathToImportedIndexFile]
-  const foundFile = candidates.find((p) => filesystem.exists(p))
-
-  if (foundFile === undefined) {
-    throw new Error(`:( ${candidates}`)
-  }
+  const foundFile = pathToImportedSourceFile(importer, filesystem)
   const file = {
     path: foundFile,
     source: filesystem.readFileAsString(foundFile),
