@@ -1,4 +1,4 @@
-import type { API, FileInfo, Options } from 'jscodeshift'
+import type { API, ExportNamedDeclaration, FileInfo, ImportDeclaration, Options } from 'jscodeshift'
 import { extractReferencedFileStringFrom } from '../shared/file-references'
 import { DefaultFilesystem, Filesystem } from '../shared/filesystem'
 import { extractImportString } from '../shared/imports'
@@ -29,26 +29,16 @@ export const transform = (file: FileInfo, api: API, _options: Options, isDirecto
   const j = api.jscodeshift.withParser(fileExtensionFrom(file.path))
   const root = j(file.source)
   root.find(api.j.ImportDeclaration).forEach((importDeclaration) => {
-    const importString = extractImportString(importDeclaration.node)
+    const node = importDeclaration.node
+    const importString = extractImportString(node)
     if (!isImportToSourceFileInProject(importString)) {
       return
     }
-    if (importString.endsWith('.js')) {
-      return
-    }
-
-    const indexTsImport = isDirectoryImport({ path: file.path, importString: importString })
-    if (importDeclaration.node.source.type === 'StringLiteral') {
-      const value = importDeclaration.node.source.value
-      if (indexTsImport) {
-        importDeclaration.node.source = api.j.stringLiteral(value + '/index.js')
-      } else {
-        importDeclaration.node.source = api.j.stringLiteral(value + '.js')
-      }
-    }
+    ensureJsExtension(node, importString, isDirectoryImport, file, api)
   })
   root.find(api.j.ExportNamedDeclaration).forEach((namedExportDeclaration) => {
-    const exportSource = namedExportDeclaration.node.source
+    const node = namedExportDeclaration.node
+    const exportSource = node.source
     if (!isPresent(exportSource)) {
       return
     }
@@ -56,19 +46,23 @@ export const transform = (file: FileInfo, api: API, _options: Options, isDirecto
     if (!isImportToSourceFileInProject(importString)) {
       return
     }
-    if (importString.endsWith('.js')) {
-      return
-    }
-
-    const indexTsImport = isDirectoryImport({ path: file.path, importString: importString })
-    if (exportSource.type === 'StringLiteral') {
-      const value = exportSource.value
-      if (indexTsImport) {
-        namedExportDeclaration.node.source = api.j.stringLiteral(value + '/index.js')
-      } else {
-        namedExportDeclaration.node.source = api.j.stringLiteral(value + '.js')
-      }
-    }
+    ensureJsExtension(node, importString, isDirectoryImport, file, api)
   })
   return root.toSource({ quote: 'single' })
+}
+
+const ensureJsExtension = (node: ImportDeclaration | ExportNamedDeclaration, importString: string,
+                           isDirectoryImport: IsDirectoryImport, file: FileInfo, api: API) => {
+  if (importString.endsWith('.js')) {
+    return
+  }
+  const indexTsImport = isDirectoryImport({ path: file.path, importString: importString })
+  if (node.source?.type === 'StringLiteral') {
+    const value = node.source.value
+    if (indexTsImport) {
+      node.source = api.j.stringLiteral(value + '/index.js')
+    } else {
+      node.source = api.j.stringLiteral(value + '.js')
+    }
+  }
 }
