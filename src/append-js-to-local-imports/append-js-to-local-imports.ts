@@ -51,8 +51,13 @@ export const transform = (file: FileInfo, api: API, _options: Options, isDirecto
   return root.toSource({ quote: 'single' })
 }
 
-const ensureJsExtension = (node: ImportDeclaration | ExportNamedDeclaration, importString: string,
-                           isDirectoryImport: IsDirectoryImport, file: FileInfo, api: API) => {
+const ensureJsExtension = (
+  node: ImportDeclaration | ExportNamedDeclaration,
+  importString: string,
+  isDirectoryImport: IsDirectoryImport,
+  file: FileInfo,
+  api: API,
+) => {
   if (importString.endsWith('.js')) {
     return
   }

@@ -9,7 +9,7 @@ describe('append js to all local imports', () => {
   const appendJsToLocalImports = (input: string) => {
     const noOptions = {}
     const fileInfo = { source: input.trim(), path: 'source-file.ts' }
-    return transform(fileInfo, apiForTypescript(), noOptions, ()=> isDirectoryReference)
+    return transform(fileInfo, apiForTypescript(), noOptions, () => isDirectoryReference)
   }
 
   beforeEach(() => {

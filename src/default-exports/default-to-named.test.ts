@@ -1,7 +1,7 @@
 import { InMemoryFilesystem } from '../shared/filesystem'
 import { Importer } from '../shared/paths'
 import { apiForTypescript } from '../shared/utils'
-import { defaultExportNameResolver} from './default-to-named'
+import { defaultExportNameResolver } from './default-to-named'
 
 describe('defaultExportNameResolver', () => {
   test('should ', () => {
