@@ -1,4 +1,4 @@
-import 'jest-extended'
+import { describe, test, expect, beforeEach } from 'vitest'
 import { InMemoryFilesystem } from '../shared/filesystem'
 import { Importer } from '../shared/paths'
 import { apiForTypescript } from '../shared/utils'

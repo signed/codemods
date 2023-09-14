@@ -1,7 +1,7 @@
+import { describe, test, expect, beforeEach } from 'vitest'
 import { DoNotTransform } from '../shared/jscodeshift-constants'
 import { transform } from './default-to-named-export'
 import { apiForTypescript } from '../shared/utils'
-import 'jest-extended'
 
 describe('replace default export with named export', () => {
   let path = ''
@@ -18,7 +18,7 @@ describe('replace default export with named export', () => {
   test('preserve line comment at the start of the file', () => {
     const input = `// preserve this comment
 export default 'banana';`
-    expect(transformedDefaultExport(input)).toStartWith('// preserve this comment')
+    expect(transformedDefaultExport(input)).to.startWith('// preserve this comment')
   })
   test('do not change type definition files', () => {
     path = 'sample.d.ts'
@@ -27,7 +27,7 @@ export default 'banana';`
 
   test('derive export name from file name', () => {
     path = 'strip/this/out/this-is-the-file.ts'
-    expect(transformedDefaultExport(`export default 'banana';`)).toStartWith('export const ThisIsTheFile =')
+    expect(transformedDefaultExport(`export default 'banana';`)).to.startWith('export const ThisIsTheFile =')
   })
 
   describe('expressions', () => {

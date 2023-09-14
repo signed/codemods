@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest'
 import { InMemoryFilesystem } from '../shared/filesystem'
 import { Importer } from '../shared/paths'
 import { apiForTypescript } from '../shared/utils'

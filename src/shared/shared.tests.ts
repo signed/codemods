@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest'
 import { isLibraryImport, isSourceFileImport } from './shared'
 
 describe('shared', () => {

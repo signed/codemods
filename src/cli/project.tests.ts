@@ -1,4 +1,5 @@
 import { resolve } from 'path'
+import { expect, test } from 'vitest'
 import { Project } from './project'
 
 test('migrate import in project', async () => {

@@ -1,4 +1,4 @@
-import 'jest-extended'
+import { describe, test, expect, beforeEach } from 'vitest'
 import { apiForTypescript } from '../shared/utils'
 import { transform } from './default-to-named-import'
 

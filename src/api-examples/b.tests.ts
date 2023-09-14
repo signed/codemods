@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import { parse } from './helpers'
 
 test('rename variables', () => {

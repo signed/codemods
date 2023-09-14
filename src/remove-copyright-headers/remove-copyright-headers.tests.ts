@@ -1,4 +1,4 @@
-import 'jest-extended'
+import { describe, expect, test } from 'vitest'
 import { apiForTypescript } from '../shared/utils'
 import { transform } from './remove-copyright-headers'
 

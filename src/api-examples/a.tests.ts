@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import { namedExportHasLocalUsage } from '../shared/import-export'
 import { DefaultParsedSource, ParsedSource } from '../shared/parsed-source'
 import { apiForTypescript } from '../shared/utils'
@@ -23,6 +24,6 @@ function someFunction(){
 }`
 
   const parsedSource: ParsedSource = new DefaultParsedSource(source, api.j)
-  expect(namedExportHasLocalUsage('one', parsedSource)).toBeTrue()
-  expect(namedExportHasLocalUsage('two', parsedSource)).toBeFalse()
+  expect(namedExportHasLocalUsage('one', parsedSource)).to.be.true
+  expect(namedExportHasLocalUsage('two', parsedSource)).to.be.false
 })

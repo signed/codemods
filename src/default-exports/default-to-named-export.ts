@@ -6,11 +6,9 @@ import {
   ASTPath,
   ExportDefaultDeclaration,
   FileInfo,
-  Identifier,
   JSCodeshift,
   NewExpression,
   Options,
-  StringLiteral,
 } from 'jscodeshift/src/core'
 import { basename, extname, dirname } from 'path'
 import { ExportName, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named'

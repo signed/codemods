@@ -1,3 +1,7 @@
+import chai from 'chai'
+import ChaiString from 'chai-string'
+chai.use(ChaiString)
+import { describe, test, expect } from 'vitest'
 import { resolve } from 'path'
 import { DefaultFilesystem } from '../shared/filesystem'
 import { apiForTypescript } from '../shared/utils'
@@ -10,14 +14,14 @@ test('identify the unused modules in the default exports sample ', () => {
   const unused = probeForDeadCodeIn(defaultExportsSamples())
   const unusedModules = unused.modules
   expect(unusedModules).toHaveLength(1)
-  expect(unusedModules[0].path).toInclude('sample/default-exports/consumer.ts')
+  expect(unusedModules[0].path).include('sample/default-exports/consumer.ts')
 
   const unusedExports = unused.exports
   expect(unusedExports).toHaveLength(2)
   expect(unusedExports[0].name).toEqual('someFunction')
-  expect(unusedExports[0].path).toEndWith('sample/default-exports/default-export-object-literal.ts')
+  expect(unusedExports[0].path).to.endWith('sample/default-exports/default-export-object-literal.ts')
   expect(unusedExports[1].name).toEqual('constantString')
-  expect(unusedExports[1].path).toEndWith('sample/default-exports/default-export-string-literal.ts')
+  expect(unusedExports[1].path).to.endWith('sample/default-exports/default-export-string-literal.ts')
 })
 
 test.skip('do not report not imported exports if they are used in the same file', () => {
