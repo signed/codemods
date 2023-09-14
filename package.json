@@ -13,7 +13,8 @@
     "transform:append-js-to-local-imports": "yarn codeshift --extensions=ts --transform src/append-js-to-local-imports/append-js-to-local-imports.ts /Users/wischan/dev/github/signed/media-devices-fake/src",
     "probe": "ts-node src/dead-code/dead-code-cli.ts sample/default-exports/",
     "test": "jest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@babel/core": "7.22.19",

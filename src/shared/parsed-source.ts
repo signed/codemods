@@ -9,7 +9,10 @@ export interface ParsedSource {
 export class DefaultParsedSource implements ParsedSource {
   private readonly _ast: Collection
 
-  constructor(private readonly source: string, private readonly _j: JSCodeshift) {
+  constructor(
+    private readonly source: string,
+    private readonly _j: JSCodeshift,
+  ) {
     this._ast = _j(source)
   }
 
