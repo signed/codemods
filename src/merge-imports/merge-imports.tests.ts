@@ -39,6 +39,17 @@ import { two } from '@example/package'
     expect(mergeImports(input)).toEqual(expected)
   })
 
+  test('two type imports from the same package', () => {
+    const input = `
+import type { one } from '@example/package'
+import type { two } from '@example/package'
+`
+    const expected = `
+import type { one, two } from '@example/package';
+`.trim()
+    expect(mergeImports(input)).toEqual(expected)
+  })
+
   test('ignore star imports to keep tree shaking working', () => {
     const input = `
 import * as Package from '@example/package'
