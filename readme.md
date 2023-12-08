@@ -48,6 +48,7 @@ If you are allowed to remove them, this should help.
 - https://github.com/5to6/5to6-codemod/blob/master/transforms/named-export-generation.js
 - https://augustinlf.com/writing-codemods-to-transform-your-codebase/
 - https://github.com/cpojer/js-codemod
+- https://github.com/awslabs/aws-sdk-js-codemod/tree/main/src/transforms/v2-to-v3
 
 ## [ts-morph](https://ts-morph.com/)
 
