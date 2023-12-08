@@ -15,22 +15,22 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "nit-pick": "yarn format && yarn test && yarn typecheck"
+    "nitpick": "yarn format && yarn test && yarn typecheck"
   },
   "devDependencies": {
     "@signed/prettier-config": "0.1.0",
-    "@types/chai-string": "1.4.3",
-    "@types/jscodeshift": "0.11.6",
+    "@types/chai-string": "1.4.5",
+    "@types/jscodeshift": "0.11.11",
     "chai-string": "1.5.0",
-    "jscodeshift": "0.15.0",
-    "prettier": "3.0.3",
-    "ts-node": "10.9.1",
-    "typescript": "5.2.2",
-    "vitest": "0.34.3"
+    "jscodeshift": "0.15.1",
+    "prettier": "3.1.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.3.3",
+    "vitest": "1.0.2"
   },
   "dependencies": {
-    "@types/node": "20.3.3",
-    "change-case": "4.1.2",
+    "@types/node": "20.10.4",
+    "change-case": "5.3.0",
     "execa": "5.1.1"
   },
   "packageManager": "yarn@1.22.19",
