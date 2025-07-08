@@ -1,6 +1,3 @@
-import chai from 'chai'
-import ChaiString from 'chai-string'
-chai.use(ChaiString)
 import { describe, test, expect } from 'vitest'
 import { resolve } from 'path'
 import { DefaultFilesystem } from '../shared/filesystem'

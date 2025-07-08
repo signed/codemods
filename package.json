@@ -21,12 +21,12 @@
     "@signed/prettier-config": "0.2.0",
     "@types/chai-string": "1.4.5",
     "@types/jscodeshift": "0.11.11",
-    "chai-string": "1.5.0",
+    "chai-string": "2.0.0",
     "jscodeshift": "0.15.1",
     "prettier": "3.6.2",
     "ts-node": "10.9.2",
     "typescript": "5.3.3",
-    "vitest": "1.0.2"
+    "vitest": "3.2.4"
   },
   "dependencies": {
     "@types/node": "20.10.4",
