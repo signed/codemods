@@ -18,10 +18,10 @@
     "nitpick": "yarn format && yarn test && yarn typecheck"
   },
   "devDependencies": {
-    "@types/node": "20.10.4",
     "@signed/prettier-config": "0.2.0",
     "@types/chai-string": "1.4.5",
     "@types/jscodeshift": "0.12.0",
+    "@types/node": "24.0.11",
     "chai-string": "2.0.0",
     "prettier": "3.6.2",
     "ts-node": "10.9.2",
@@ -30,8 +30,8 @@
   },
   "dependencies": {
     "change-case": "5.4.4",
-    "jscodeshift": "17.3.0",
-    "execa": "5.1.1"
+    "execa": "5.1.1",
+    "jscodeshift": "17.3.0"
   },
   "packageManager": "yarn@1.22.19",
   "prettier": "@signed/prettier-config"
