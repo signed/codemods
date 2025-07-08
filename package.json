@@ -18,19 +18,19 @@
     "nitpick": "yarn format && yarn test && yarn typecheck"
   },
   "devDependencies": {
+    "@types/node": "20.10.4",
     "@signed/prettier-config": "0.2.0",
     "@types/chai-string": "1.4.5",
-    "@types/jscodeshift": "0.11.11",
+    "@types/jscodeshift": "0.12.0",
     "chai-string": "2.0.0",
-    "jscodeshift": "0.15.1",
     "prettier": "3.6.2",
     "ts-node": "10.9.2",
     "typescript": "5.3.3",
     "vitest": "3.2.4"
   },
   "dependencies": {
-    "@types/node": "20.10.4",
     "change-case": "5.4.4",
+    "jscodeshift": "17.3.0",
     "execa": "5.1.1"
   },
   "packageManager": "yarn@1.22.19",
