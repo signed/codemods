@@ -49,6 +49,7 @@ If you are allowed to remove them, this should help.
 - https://augustinlf.com/writing-codemods-to-transform-your-codebase/
 - https://github.com/cpojer/js-codemod
 - https://github.com/awslabs/aws-sdk-js-codemod/tree/main/src/transforms/v2-to-v3
+- https://github.com/prescottprue/jscodeshift-esm
 
 ## [ts-morph](https://ts-morph.com/)
 
