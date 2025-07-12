@@ -53,6 +53,8 @@ If you are allowed to remove them, this should help.
 - https://github.com/awslabs/aws-sdk-js-codemod/tree/main/src/transforms/v2-to-v3
 - https://github.com/prescottprue/jscodeshift-esm
 
+- https://www.hypermod.io/docs build on top of jscodeshift, docs look interesting
+
 ## [ts-morph](https://ts-morph.com/)
 
 - https://github.com/WolkSoftware/tsmod (abstraction on top of ts.morph)
