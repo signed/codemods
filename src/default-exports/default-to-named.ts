@@ -1,4 +1,4 @@
-import * as K from 'ast-types/gen/kinds'
+import * as K from 'ast-types/lib/gen/kinds'
 import { API } from 'jscodeshift'
 import { DefaultFilesystem, Filesystem } from '../shared/filesystem'
 import { Importer, pathToImportedSourceFile } from '../shared/paths'

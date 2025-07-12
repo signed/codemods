@@ -6,6 +6,7 @@ import { namedExportHasLocalUsage } from '../shared/import-export'
 import { DefaultParsedSource } from '../shared/parsed-source'
 import { fileExtensionFrom } from '../shared/paths'
 import { isImportToSourceFileInProject } from '../shared/shared'
+import { isTSTypeParameter } from '../shared/typeguards'
 
 export interface UnusedModule {
   path: PathToSourceFile
@@ -64,8 +65,12 @@ export const extractExportsFrom = (source: string, j: JSCodeshift): Export[] => 
     const declaration = exp.node.declaration
 
     const specifiers = exp.node.specifiers ?? []
-    specifiers.forEach((spec) => {
-      exports.push({ exportString: spec.exported.name })
+    specifiers.forEach((specifier) => {
+      const exported = specifier.exported
+      if (isTSTypeParameter(exported)) {
+        throw new Error('look at the code')
+      }
+      exports.push({ exportString: exported.name })
     })
 
     if (declaration?.type === 'VariableDeclaration') {
@@ -144,7 +149,13 @@ export const extractImportsFrom = (source: string, j: JSCodeshift): Import[] => 
     const imported = collection
       .find(j.ImportSpecifier)
       .nodes()
-      .map((spec) => spec.imported.name)
+      .map((specified) => {
+        const imported = specified.imported
+        if (isTSTypeParameter(imported)) {
+          throw new Error('look at the code')
+        }
+        return imported.name
+      })
     if (collection.find(j.ImportDefaultSpecifier).length > 0) {
       imported.push('default')
     }

@@ -1,4 +1,4 @@
-import * as K from 'ast-types/gen/kinds'
+import * as K from 'ast-types/lib/gen/kinds'
 import { isLiteral, isStringLiteral } from './typeguards'
 
 export const extractReferencedFileStringFrom = (source: K.LiteralKind) => {

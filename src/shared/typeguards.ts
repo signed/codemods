@@ -1,4 +1,5 @@
-import * as K from 'ast-types/gen/kinds'
+import * as K from 'ast-types/lib/gen/kinds'
+import { namedTypes } from 'ast-types/lib/gen/namedTypes'
 import { Literal } from 'jscodeshift'
 
 export const isStringLiteral = (toCheck: K.LiteralKind): toCheck is K.StringLiteralKind => {
@@ -7,4 +8,8 @@ export const isStringLiteral = (toCheck: K.LiteralKind): toCheck is K.StringLite
 
 export const isLiteral = (toCheck: K.LiteralKind): toCheck is Literal => {
   return toCheck.type === 'Literal'
+}
+
+export const isTSTypeParameter = (toCheck: K.IdentifierKind): toCheck is namedTypes.TSTypeParameter => {
+  return toCheck.type === 'TSTypeParameter'
 }

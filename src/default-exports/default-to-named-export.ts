@@ -1,4 +1,4 @@
-import * as K from 'ast-types/gen/kinds'
+import * as K from 'ast-types/lib/gen/kinds'
 import { camelCase, pascalCase } from 'change-case'
 import { Collection } from 'jscodeshift/src/Collection'
 import {
@@ -11,6 +11,7 @@ import {
   Options,
 } from 'jscodeshift/src/core'
 import { basename, extname, dirname } from 'path'
+import { isTSTypeParameter } from '../shared/typeguards'
 import { ExportName, isDeclarationKind, isMaybeAnonymousDeclarationKind } from './default-to-named'
 import { DoNotTransform } from '../shared/jscodeshift-constants'
 import { preserveCommentAtStartOfFile } from '../shared/shared'
@@ -61,6 +62,9 @@ export const replaceWithNamedExport = (root: Collection<any>, j: JSCodeshift, fi
       if (declaration.id === null) {
         declaration.id = j.identifier(exportName)
       } else {
+        if (isTSTypeParameter(declaration.id)) {
+          throw new Error('look at the code')
+        }
         identifier = declaration.id.name
       }
     }
@@ -78,10 +82,14 @@ const removeAliasDefaultExport = (
   declaration: K.IdentifierKind,
   defaultExport: ASTPath<ExportDefaultDeclaration>,
 ): NamedExport => {
+  const identifier = declaration.name
+  if (typeof identifier !== 'string') {
+    throw new Error('look at the code')
+  }
   const identifiers = root.find(j.VariableDeclarator, {
     id: {
       type: 'Identifier',
-      name: declaration.name,
+      name: identifier,
     },
   })
   if (identifiers.size() !== 1) {
@@ -107,8 +115,9 @@ const removeAliasDefaultExport = (
   }
 
   j(defaultExport).replaceWith([])
+
   return {
-    identifier: declaration.name,
+    identifier: identifier,
   }
 }
 

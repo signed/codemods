@@ -9,6 +9,7 @@ import {
   ImportDefaultSpecifier,
 } from 'jscodeshift'
 import { extractImportString } from '../shared/imports'
+import { isTSTypeParameter } from '../shared/typeguards'
 import { defaultExportNameResolver, ExportNameResolver } from './default-to-named'
 import { DoNotTransform } from '../shared/jscodeshift-constants'
 import { isImportToSourceFileInProject } from '../shared/shared'
@@ -32,10 +33,14 @@ export const transform = (file: FileInfo, api: API, _options: Options, exportNam
       return
     }
     const exportName = exportNameResolver({ path: file.path, importString }, api)
-    const localName = importSpecifier.value.local?.name
+    const local = importSpecifier.value.local
+
     let localNameIdentifier: Identifier | null = null
-    if (localName !== undefined && localName !== exportName) {
-      localNameIdentifier = api.j.identifier(localName)
+    if (local !== undefined && local !== null && !isTSTypeParameter(local)) {
+      const localName = local.name
+      if (localName !== exportName) {
+        localNameIdentifier = api.j.identifier(localName)
+      }
     }
     importSpecifier.replace(api.j.importSpecifier(api.j.identifier(exportName), localNameIdentifier))
   }
