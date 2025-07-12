@@ -41,6 +41,8 @@ If you are allowed to remove them, this should help.
 
 ## [jscodeshift](https://github.com/facebook/jscodeshift)
 
+[Announcement: Maintenance and Future Plans](https://github.com/facebook/jscodeshift/issues/587)
+
 - https://github.com/elliottsj/jscodeshift-typescript-example
   Contains an example on how to test the code mode in an end-to-end fashion
 - https://www.toptal.com/javascript/write-code-to-rewrite-your-code
